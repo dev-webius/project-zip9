@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class LHApiClient {
+public class LHApiClient implements Client {
     private final WebClient webClient;
     private static final String BASE_URL = "http://apis.data.go.kr/B552555";
     private static final String DECODED_SERVICE_KEY = "dFO37hTXbj0XfqChs155Oc8em7iRWRtqQYi9kT54LWZSjjBIErEr4sEYwfKn8wIAisL3B8MUYIggAKSrxZXIPA==";
@@ -39,6 +39,7 @@ public class LHApiClient {
                 .build();
     }
 
+    @Override
     public List<LHAnnouncementResponse> getAnnouncements(LHAnnouncementRequest request) {
         List<Object> response = webClient
                 .get()
@@ -61,7 +62,7 @@ public class LHApiClient {
         return lhAnnouncementsResponse.getLhAnnouncements();
     }
 
-
+    @Override
     public LHAnnouncementSupplyInfoResponse getAnnouncementSupplyInfo(AnnouncementSupplyInfoRequest request) {
         Flux<Object> flux = webClient
                 .get()
@@ -76,7 +77,7 @@ public class LHApiClient {
 
         return mapper.convertValue(flux.collectList().block().get(1), LHAnnouncementSupplyInfoResponse.class);
     }
-
+    @Override
     public LHAnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
         Flux<Object> flux = webClient
                 .get()

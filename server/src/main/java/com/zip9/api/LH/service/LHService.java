@@ -1,5 +1,6 @@
 package com.zip9.api.LH.service;
 
+import com.zip9.api.LH.client.Client;
 import com.zip9.api.LH.client.LHApiClient;
 import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
 import com.zip9.api.LH.dto.LHAnnouncementRequest;
@@ -15,7 +16,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class LHService {
-    private final LHApiClient client;
+    private final Client client;
 
     public List<LHAnnouncementResponse> searchAnnouncements(LHAnnouncementRequest request) {
         return client.getAnnouncements(request);
