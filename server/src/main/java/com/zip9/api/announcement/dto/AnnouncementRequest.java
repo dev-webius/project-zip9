@@ -1,5 +1,6 @@
 package com.zip9.api.announcement.dto;
 
+import com.zip9.api.LH.dto.LHAnnouncementRequest;
 import com.zip9.api.LH.enums.AnnouncementStatus;
 import com.zip9.api.LH.enums.AnnouncementType;
 import com.zip9.api.LH.enums.City;
@@ -25,35 +26,40 @@ import static com.zip9.api.LH.enums.AnnouncementType.*;
 @Data
 public class AnnouncementRequest {
     @NotNull
-    @Parameter(description = "공고게시 시작일", in = ParameterIn.QUERY, example = "2023-06-01")
+    @Parameter(description = "공고게시 시작일", in = ParameterIn.QUERY, example = "2023-07-01")
     private LocalDate registStartDate;
 
     @NotNull
-    @Parameter(description = "공고게시 종료일", in = ParameterIn.QUERY, example = "2023-12-31")
+    @Parameter(description = "공고게시 종료일", in = ParameterIn.QUERY, example = "2023-07-31")
     private LocalDate registEndDate;
 
-    @Parameter(description = "공고마감 시작일", in = ParameterIn.QUERY, example = "2023-06-01")
+    @Parameter(description = "공고마감 시작일", in = ParameterIn.QUERY)
     private LocalDate closeStartDate;
 
-    @Parameter(description = "공고마감 종료일", in = ParameterIn.QUERY, example = "2023-12-31")
+    @Parameter(description = "공고마감 종료일", in = ParameterIn.QUERY)
     private LocalDate closeEndDate;
 
     @Parameter(description = "공고명", in = ParameterIn.QUERY)
     private String title;
 
     @EnumConstraints(enumClass = City.class, ignoreCase = true, nullable = true)
-    @Parameter(description = "도시 (미입력 시 전체)", in = ParameterIn.QUERY, schema = @Schema(implementation = City.class))
+    @Parameter(description = "도시 (미입력 시 전체)", in = ParameterIn.QUERY)
+    @Schema(implementation = City.class)
     private String city;
 
     @EnumConstraints(enumClass = AnnouncementType.class, ignoreCase = true, nullable = true)
     @Parameter(description = "공고유형 (미입력 시 전체)", in = ParameterIn.QUERY)
-    @ArraySchema(schema = @Schema(implementation = AnnouncementType.class))
+    @ArraySchema(schema = @Schema(implementation = AnnouncementType.class,
+            description ="RENT : 임대주택, WELFARE : 주거복지(매입임대), NEWLYWEDS : 신혼희망타운"))
     @Builder.Default
     private List<String> announcementTypes = new ArrayList<>();
 
     @EnumConstraints(enumClass = AnnouncementStatus.class, ignoreCase = true, nullable = true)
     @Parameter(description = "공고상태 (미입력 시 전체)")
-    @ArraySchema(schema = @Schema(implementation = AnnouncementStatus.class))
+    @ArraySchema(schema = @Schema(implementation = AnnouncementStatus.class,
+            description ="ANNOUNCED : 공고중, ACCEPTABLE : 접수중, ANNOUNCED_CORRECTLY : 정정공고중"))
+
+
     @Builder.Default
     private List<String> announcementStatus = new ArrayList<>();
 
@@ -77,7 +83,7 @@ public class AnnouncementRequest {
         this.closeEndDate = closeEndDate;
 
         if (ObjectUtils.isEmpty(announcementTypes)) {
-            this.announcementTypes = List.of(PRESALES.name(), RENTAL.name(), WELFARE.name(), NEWLYWEDS.name());
+            this.announcementTypes = List.of(RENT.name(), WELFARE.name(), NEWLYWEDS.name());
         } else {
             this.announcementTypes = announcementTypes;
         }
@@ -87,5 +93,27 @@ public class AnnouncementRequest {
         } else {
             this.announcementStatus = announcementStatus;
         }
+    }
+
+    public List<LHAnnouncementRequest> buildLHRequests() {
+        List<LHAnnouncementRequest> requests = new ArrayList<>();
+
+        for (String announcementType : announcementTypes) {
+            for (String announcementStatus : announcementStatus) {
+                requests.add(LHAnnouncementRequest.builder()
+                        .registStartDate(registStartDate)
+                        .registEndDate(registEndDate)
+                        .title(title)
+                        .announcementType(announcementType)
+                        .announcementStatus(announcementStatus)
+                        .city(city)
+                        .closeStartDate(closeStartDate)
+                        .closeEndDate(closeEndDate)
+                        .build()
+                );
+            }
+        }
+
+        return requests;
     }
 }

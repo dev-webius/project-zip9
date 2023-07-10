@@ -3,9 +3,11 @@ package com.zip9.api.announcement.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.util.StringUtils;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 public class LabelAndValue {

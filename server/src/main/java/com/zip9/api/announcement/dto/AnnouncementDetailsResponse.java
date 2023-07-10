@@ -1,10 +1,13 @@
 package com.zip9.api.announcement.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
+import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,7 @@ public class AnnouncementDetailsResponse {
 
     @Getter
     @Builder
+    @AllArgsConstructor
     public static class HouseComplex {
         @JsonProperty("nameItem")
         private Name name;
@@ -141,10 +145,87 @@ public class AnnouncementDetailsResponse {
             }
         }
 
+        public String getNameOrDetailAddress() {
+            return StringUtils.hasLength(name.getValue()) ? name.getValue() : detailAddress.getValue();
+        }
+
+        public static HouseComplex buildFrom(LHAnnouncementDetailResponse.HouseComplex.Label lhDetailHouseComplexLabel, LHAnnouncementDetailResponse.HouseComplex.Value lhDetailHouseComplexValue) {
+            return HouseComplex.builder()
+                    .name(Name.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getHouseComplexName())
+                            .value(lhDetailHouseComplexValue.getHouseComplexName())
+                            .build()
+                    )
+                    .address(Address.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getHouseComplexAddress())
+                            .value(lhDetailHouseComplexValue.getHouseComplexAddress())
+                            .build()
+                    )
+                    .detailAddress(DetailAddress.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getHouseComplexDetailAddress())
+                            .value(lhDetailHouseComplexValue.getHouseComplexDetailAddress())
+                            .build()
+                    )
+                    .netLeasableAreaRange(NetLeasableAreaRange.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getNetLeasableArea())
+                            .value(lhDetailHouseComplexValue.getNetLeasableArea())
+                            .build()
+                    )
+                    .totalOfHousehold(TotalOfHousehold.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getTotalHouseholdCount())
+                            .value(lhDetailHouseComplexValue.getTotalHouseholdCount())
+                            .build()
+                    )
+                    .heatingTypeName(HeatingTypeName.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getHeatingTypeName())
+                            .value(lhDetailHouseComplexValue.getHeatingTypeName())
+                            .build()
+                    )
+                    .expectedMoveInDate(ExpectedMoveInDate.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getExpectedMoveInDate())
+                            .value(lhDetailHouseComplexValue.getExpectedMoveInDate())
+                            .build()
+                    )
+                    .trafficFacilities(TrafficFacilities.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getTrafficFacilities())
+                            .value(lhDetailHouseComplexValue.getTrafficFacilities())
+                            .build()
+                    )
+                    .educationFacilities(EducationFacilities.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getEducationFacilities())
+                            .value(lhDetailHouseComplexValue.getEducationFacilities())
+                            .build()
+                    )
+                    .convenientFacilities(ConvenientFacilities.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getConvenientFacilities())
+                            .value(lhDetailHouseComplexValue.getConvenientFacilities())
+                            .build()
+                    )
+                    .appurtenantFacilities(AppurtenantFacilities.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getAppurtenantFacilities())
+                            .value(lhDetailHouseComplexValue.getAppurtenantFacilities())
+                            .build()
+                    )
+                    .supplyInfoGuide(SupplyInfoGuide.innerBuilder()
+                            .label(lhDetailHouseComplexLabel.getSupplyInfoGuide())
+                            .value(lhDetailHouseComplexValue.getSupplyInfoGuide())
+                            .build()
+                    )
+                    .build();
+        }
+
+        public void setAttachments(List<Attachment> attachments) {
+            this.attachments = attachments;
+        }
+
+        public void setHouseTypes(List<HouseType> houseTypes) {
+            this.houseTypes = houseTypes;
+        }
     }
 
     @Getter
     @Builder
+    @AllArgsConstructor
     public static class HouseType {
         @JsonProperty("houseTypeNameItem")
         private HouseTypeName houseTypeName; // 29A
@@ -227,10 +308,66 @@ public class AnnouncementDetailsResponse {
                 super(label, value);
             }
         }
+
+        public static HouseType buildFrom(LHAnnouncementSupplyInfoResponse.Label lhHouseSupplyInfoLabel, LHAnnouncementSupplyInfoResponse.Value lhHouseSupplyInfoValue) {
+            return HouseType.builder()
+                    .houseTypeName(HouseTypeName.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getHouseTypeName())
+                            .value(lhHouseSupplyInfoValue.getHouseTypeName())
+                            .build()
+                    )
+                    .supplyArea(SupplyArea.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getSupplyArea())
+                            .value(lhHouseSupplyInfoValue.getSupplyArea())
+                            .build()
+                    )
+                    .netLeasableArea(NetLeasableArea.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getNetLeasableArea())
+                            .value(lhHouseSupplyInfoValue.getNetLeasableArea())
+                            .build()
+                    )
+                    .numberOfHousehold(NumberOfHousehold.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getNumberOfHousehold())
+                            .value(lhHouseSupplyInfoValue.getNumberOfHousehold())
+                            .build()
+                    )
+                    .numberOfSupplyHousehold(NumberOfSupplyHousehold.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getNumberOfSupplyHousehold())
+                            .value(lhHouseSupplyInfoValue.getNumberOfSupplyHousehold())
+                            .build()
+                    )
+                    .numberOfApplicants(NumberOfApplicants.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getNumberOfApplicants())
+                            .value(lhHouseSupplyInfoValue.getNumberOfApplicants())
+                            .build()
+                    )
+                    .numberOfCandidates(NumberOfCandidates.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getNumberOfCandidates())
+                            .value(lhHouseSupplyInfoValue.getNumberOfCandidates())
+                            .build()
+                    )
+                    .amount(Amount.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getAmount())
+                            .value(lhHouseSupplyInfoValue.getAmount())
+                            .build()
+                    )
+                    .rentFee(RentFee.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getRentFee())
+                            .value(lhHouseSupplyInfoValue.getRentFee())
+                            .build()
+                    )
+                    .rentFeeEtc(RentFeeEtc.innerBuilder()
+                            .label(lhHouseSupplyInfoLabel.getRentFeeEtc())
+                            .value(lhHouseSupplyInfoValue.getRentFeeEtc())
+                            .build()
+                    )
+                    .build();
+        }
     }
 
     @Getter
     @Builder
+    @AllArgsConstructor
     public static class Attachment {
         @JsonProperty("fileNameItem")
         private FileName fileName;
@@ -260,6 +397,24 @@ public class AnnouncementDetailsResponse {
             }
         }
 
+        public static Attachment buildFrom(LHAnnouncementDetailResponse.HouseComplexAttachment.Label lhDetailHouseComplexAttachmentLabel, LHAnnouncementDetailResponse.HouseComplexAttachment.Value lhDetailHouseComplexAttachmentValue) {
+            return Attachment.builder()
+                    .fileName(FileName.innerBuilder()
+                            .label(lhDetailHouseComplexAttachmentLabel.getFileName())
+                            .value(lhDetailHouseComplexAttachmentValue.getFileName())
+                            .build()
+                    )
+                    .fileTypeName(FileTypeName.innerBuilder()
+                            .label(lhDetailHouseComplexAttachmentLabel.getFileExtends())
+                            .value(lhDetailHouseComplexAttachmentValue.getFileExtends())
+                            .build()
+                    )
+                    .downloadUrl(DownloadUrl.innerBuilder()
+                            .label(lhDetailHouseComplexAttachmentLabel.getDownloadUrl())
+                            .value(lhDetailHouseComplexAttachmentValue.getDownloadUrl())
+                            .build()
+                    ).build();
+        }
     }
 
     @Getter
@@ -498,8 +653,4 @@ public class AnnouncementDetailsResponse {
             }
         }
     }
-
-
-
-
 }

@@ -2,13 +2,10 @@ package com.zip9.api.naver.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Range;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -50,6 +47,16 @@ public class GeocodingResponse {
         private String y;
         private Double distance;
         private List<AddressElelment> addressElements;
+
+        public String getAddress() {
+            if (StringUtils.hasLength(roadAddress)) {
+                return roadAddress;
+            } else if (StringUtils.hasLength(jibunAddress)) {
+                return jibunAddress;
+            } else {
+                return "조회되지 않음";
+            }
+        }
 
         public Boolean hasPosition() {
             return StringUtils.hasText(this.x) && StringUtils.hasText(this.y);

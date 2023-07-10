@@ -1,11 +1,14 @@
 package com.zip9.api.announcement.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.zip9.api.LH.dto.LHAnnouncementResponse;
+import com.zip9.api.LH.enums.City;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,4 +43,32 @@ public class Announcement {
     private List<AnnouncementResponse.Position> positions;
     @Parameter(description = "단지별 상세정보")
     private List<AnnouncementDetailsResponse> details;
+
+    @Builder(builderClassName = "ByLHAnnouncement", builderMethodName = "ByLHAnnouncement")
+    public Announcement(LHAnnouncementResponse lhAnnouncement, List<AnnouncementResponse.Position> positions, List<AnnouncementDetailsResponse> details) {
+        this.id = lhAnnouncement.getId();
+        this.title = lhAnnouncement.getTitle();
+        this.statusName = lhAnnouncement.getAnnouncementStatusName();
+        this.announcementTypeName = lhAnnouncement.getAnnouncementTypeName();
+        this.announcementDetailTypeName = lhAnnouncement.getAnnouncementDetailTypeName();
+        this.cityName = lhAnnouncement.getCityName();
+        this.detailUrlMobile = lhAnnouncement.getDetailUrlMobile();
+        this.detailUrl = lhAnnouncement.getDetailUrl();
+        this.registDate = lhAnnouncement.getRegistDate();
+        this.closeDate = lhAnnouncement.getCloseDate();
+        this.positions = positions;
+        this.details = details;
+    }
+
+    public String getCityShortName() {
+        if (ObjectUtils.isEmpty(City.nameOf(cityName))) {
+            return City.ETC.shortName;
+        } else {
+            return City.nameOf(cityName).shortName;
+        }
+    }
+
+    public void setCityShortName(String cityShortName) {
+        this.cityShortName = cityShortName;
+    }
 }

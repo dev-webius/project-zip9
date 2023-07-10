@@ -25,107 +25,63 @@ public class AnnouncementService {
 
     /**
      * 공고 목록 조회
-     *
      */
     public AnnouncementResponse searchAnnouncements(AnnouncementRequest request) {
-        List<LHAnnouncementRequest> lhRequests = buildLHAnnouncementRequestsFrom(request);
-        List<LHAnnouncementResponse> lhAnnouncements = lhRequests.stream()
+        // LH 공고 리스트
+        List<LHAnnouncementRequest> lhAnnouncementRequests = request.buildLHRequests();
+        List<LHAnnouncementResponse> lhAnnouncements = lhAnnouncementRequests.stream()
                 .map(lhRequest -> lhService.searchAnnouncements(lhRequest))
                 .flatMap(List::stream)
                 .toList()
                 .stream()
                 .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
-                .toList()
-                ;
-
-//        lhAnnouncements.forEach(lhAnnouncement -> {
-//            lhAnnouncement.setDetail(lhService.getAnnouncementDetail(buildAnnouncementDetailRequest(lhAnnouncement)));
-//            lhAnnouncement.setSupplyInfo(lhService.getAnnouncementSupplyInfo(buildAnnouncementSupplyInfoRequest(lhAnnouncement)));
-//        });
-
-
-        List<Announcement> announcements = lhAnnouncements.stream()
-                .map(this::buildAnnouncementItemFrom)
                 .toList();
 
+        // LH 공고상세 & 공급정보
+        lhAnnouncements.forEach(lhAnnouncement -> {
+            lhAnnouncement.setDetail(lhService.getAnnouncementDetail(new AnnouncementDetailRequest(lhAnnouncement)));
+            lhAnnouncement.setSupplyInfo(lhService.getAnnouncementSupplyInfo(new AnnouncementSupplyInfoRequest(lhAnnouncement)));
+        });
+
+        // API Response 데이터 생성
         AnnouncementResponse response = new AnnouncementResponse();
-        AnnouncementResponse.Meta meta = response.getMeta();
-        LinkedHashMap<String, List<Announcement>> announcementsByCity = response.getAnnouncements();
+
+        List<Announcement> announcements = lhAnnouncements.stream()
+                .map(this::buildAnnouncementFrom)
+                .toList();
 
         for (Announcement announcement : announcements) {
-            Map<String, Integer> numberOfAnnouncementsByCity = meta.getNumberOfAnnouncementsByCity();
+            Map<String, Integer> numberOfAnnouncementsByCity = response.getMeta().getNumberOfAnnouncementsByCity();
 
-            String cityShortName = "";
+            // 도시별 공고 추가
+            response.getItem().getAnnouncements().get(announcement.getCityShortName()).add(announcement);
 
-            if (numberOfAnnouncementsByCity.containsKey(announcement.getCityShortName())) {
-                cityShortName = announcement.getCityShortName();
-            } else {
-                cityShortName = City.ETC.shortName;
-            }
-
-            announcementsByCity.get(cityShortName).add(announcement);
-
+            // 도시별 공고수 증가
             numberOfAnnouncementsByCity.put(
-                    cityShortName, numberOfAnnouncementsByCity.get(cityShortName) + 1
+                    announcement.getCityShortName(),
+                    numberOfAnnouncementsByCity.get(announcement.getCityShortName()) + 1
             );
-
         }
 
-        return AnnouncementResponse.builder()
-                .announcements(announcementsByCity)
-                .meta(meta)
-                .build();
+        return response;
     }
 
-    private List<LHAnnouncementRequest> buildLHAnnouncementRequestsFrom(AnnouncementRequest request) {
-        List<LHAnnouncementRequest> requests = new ArrayList<>();
-        for (String announcementType : request.getAnnouncementTypes()) {
-            for (String announcementStatus : request.getAnnouncementStatus()) {
-                requests.add(LHAnnouncementRequest.builder()
-                        .registStartDate(request.getRegistStartDate())
-                        .registEndDate(request.getRegistEndDate())
-                        .title(request.getTitle())
-                        .announcementType(announcementType)
-                        .announcementStatus(announcementStatus)
-                        .city(request.getCity())
-                        .closeStartDate(request.getCloseStartDate())
-                        .closeEndDate(request.getCloseEndDate())
-                        .build()
-                );
-            }
-        }
-        return requests;
-    }
-
-    /**
-     * 공고 데이터 Build
-     * - LH 공고 데이터 -> ZIP9 공고
-     *
-     */
-    private Announcement buildAnnouncementItemFrom(LHAnnouncementResponse lhAnnouncement) {
+    private Announcement buildAnnouncementFrom(LHAnnouncementResponse lhAnnouncement) {
         List<AnnouncementDetailsResponse> details = buildAnnouncementDetailsFrom(lhAnnouncement.getDetail(), lhAnnouncement.getSupplyInfo(), lhAnnouncement.getSupplyTypeCode());
         List<AnnouncementResponse.Position> positions = buildPositionOfHouseComplexes(details);
 
-        Announcement.AnnouncementBuilder builder = Announcement.builder()
-                .id(lhAnnouncement.getId())
-                .title(lhAnnouncement.getTitle())
-                .statusName(lhAnnouncement.getAnnouncementStatusName())
-                .announcementTypeName(lhAnnouncement.getAnnouncementTypeName())
-                .announcementDetailTypeName(lhAnnouncement.getAnnouncementDetailTypeName())
-                .cityName(lhAnnouncement.getCityName())
-                .detailUrlMobile(lhAnnouncement.getDetailUrlMobile())
-                .detailUrl(lhAnnouncement.getDetailUrl())
-                .registDate(lhAnnouncement.getRegistDate())
-                .closeDate(lhAnnouncement.getCloseDate())
+        Announcement announcement = Announcement.ByLHAnnouncement()
+                .lhAnnouncement(lhAnnouncement)
                 .positions(positions)
-                .details(details);
+                .details(details)
+                .build();
 
 
         if (!ObjectUtils.isEmpty(City.nameOf(lhAnnouncement.getCityName()))) {
-            builder.cityShortName(City.nameOf(lhAnnouncement.getCityName()).shortName);
+            announcement.setCityShortName(City.nameOf(lhAnnouncement.getCityName()).shortName);
         }
 
-        return builder.build();
+        return announcement;
     }
 
     private List<AnnouncementResponse.Position> buildPositionOfHouseComplexes(List<AnnouncementDetailsResponse> details) {
@@ -156,8 +112,8 @@ public class AnnouncementService {
 
                 if (address.hasPosition()) {
                     positions.add(AnnouncementResponse.Position.builder()
-                            .houseComplexName(houseComplex.getName().getValue())
-                            .address(address.getRoadAddress())
+                            .houseComplexName(houseComplex.getNameOrDetailAddress())
+                            .address(address.getAddress())
                             .x(address.getX())
                             .y(address.getY())
                             .build()
@@ -165,120 +121,123 @@ public class AnnouncementService {
                 }
             }
         }
+
         return positions;
     }
 
-    /**
-     * 공고상세 데이터 Build
-     * - (LH 공고상세정보 + LH 주택공급정보) -> ZIP9 공고상세
-     *
-     */
     private List<AnnouncementDetailsResponse> buildAnnouncementDetailsFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseSupplyTypeCode) {
-        List<AnnouncementDetailsResponse> items = new ArrayList<>();
+        List<AnnouncementDetailsResponse> details = new ArrayList<>();
 
-        Iterator<LHAnnouncementSupplyInfoResponse.Label> labelIter = lhSupplyInfo.getLabels().iterator();
-        Iterator<List<LHAnnouncementSupplyInfoResponse.Value>> valueIter = lhSupplyInfo.getValues().iterator();
+        List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = buildHouseComplexesFrom(lhDetail, lhSupplyInfo);
+        List<AnnouncementDetailsResponse.SupplySchedule> supplySchedules = buildSupplySchedulesFrom(lhDetail, houseSupplyTypeCode);
 
-        while (labelIter.hasNext() && valueIter.hasNext()) {
-            LHAnnouncementSupplyInfoResponse.Label supplyInfoLabel = labelIter.next();
-            List<LHAnnouncementSupplyInfoResponse.Value> supplyInfoValues = valueIter.next();
-            List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = buildHouseComplexesFrom(lhDetail, supplyInfoLabel, supplyInfoValues, houseSupplyTypeCode);
+        // 데이터 보정
+        Map<String, AnnouncementDetailsResponse.HouseComplex> houseComplexesMap = houseComplexes.stream()
+                .collect(
+                        Collectors.toMap(
+                                AnnouncementDetailsResponse.HouseComplex::getNameOrDetailAddress,
+                                houseComplex -> houseComplex
+                )
+        );
 
-            List<String> houseComplexNames = houseComplexes.stream()
-                    .map(houseComplex -> houseComplex.getName().getValue())
-                    .toList();
-            Map<String, AnnouncementDetailsResponse.HouseComplex> houseComplexesMap = houseComplexes.stream()
-                    .collect(Collectors.toMap(
-                                    houseComplex -> houseComplex.getName().getValue(),
-                                    houseComplex -> houseComplex
-                    ));
+        details.add(AnnouncementDetailsResponse.builder()
+                        .supplySchedules(supplySchedules)
+                        .houseComplexes(AnnouncementDetailsResponse.HouseComplexes.builder()
+                                .names(houseComplexesMap.keySet().stream().toList())
+                                .map(houseComplexesMap)
+                                .build())
+                        .reception(buildReceptionFrom(lhDetail))
+                        .etc(buildEtcFrom(lhDetail))
+                        .build()
+        );
 
 
-            List<AnnouncementDetailsResponse.SupplySchedule> supplySchedules = buildSupplySchedulesFrom(lhDetail, houseSupplyTypeCode);
-
-            items.add(AnnouncementDetailsResponse.builder()
-                            .supplySchedules(supplySchedules)
-                            .houseComplexes(AnnouncementDetailsResponse.HouseComplexes.builder()
-                                    .names(houseComplexNames)
-                                    .map(houseComplexesMap)
-                                    .build())
-                            .reception(buildReceptionFrom(lhDetail))
-                            .etc(buildEtcFrom(lhDetail))
-                            .build()
-            );
-
-        }
-
-        return items;
+        return details;
     }
 
     private List<AnnouncementDetailsResponse.SupplySchedule> buildSupplySchedulesFrom(LHAnnouncementDetailResponse lhDetail, String houseSupplyTypeCode) {
+        List<AnnouncementDetailsResponse.SupplySchedule> supplySchedules = new ArrayList<>();
+
         LHAnnouncementDetailResponse.SupplySchedule.Label lhDetailSupplyScheduleLabel = lhDetail.getSupplySchedule().getLabel();
 
-        return lhDetail.getSupplySchedule().getValues().stream()
-                .map(lhDetailSupplyScheduleValue -> AnnouncementDetailsResponse.SupplySchedule.builder()
-                        .target(AnnouncementDetailsResponse.SupplySchedule.Target.innerBuilder()
-                                .label(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
-                                        ? lhDetailSupplyScheduleLabel.getTarget()
-                                        : lhDetailSupplyScheduleLabel.getHouseComplexName()
-                                )
-                                .value(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
-                                        ? lhDetailSupplyScheduleValue.getTarget()
-                                        : lhDetailSupplyScheduleValue.getHouseComplexName()
-                                )
-                                .build()
-                        )
-                        .applicationDatetime(AnnouncementDetailsResponse.SupplySchedule.ApplicationDatetime.innerBuilder()
-                                .label(lhDetailSupplyScheduleLabel.getApplicationDatetime())
-                                .value(lhDetailSupplyScheduleValue.getApplicationDatetime())
-                                .build()
-                        )
-                        .applicationMethod(AnnouncementDetailsResponse.SupplySchedule.ApplicationMethod.innerBuilder()
-                                .label(lhDetailSupplyScheduleLabel.getApplicationMethod())
-                                .value(lhDetailSupplyScheduleValue.getApplicationMethod())
-                                .build()
-                        )
-                        .winnerAnnouncementDate(AnnouncementDetailsResponse.SupplySchedule.WinnerAnnouncementDate.innerBuilder()
-                                .label(lhDetailSupplyScheduleLabel.getWinnerAnnouncementDate())
-                                .value(lhDetailSupplyScheduleValue.getWinnerAnnouncementDate())
-                                .build()
-                        )
-                        .paperSubmitOpenAnnouncementDate(AnnouncementDetailsResponse.SupplySchedule.PaperSubmitOpenAnnouncementDate.innerBuilder()
-                                .label(lhDetailSupplyScheduleLabel.getPaperSubmitOpenAnnouncementDate())
-                                .value(lhDetailSupplyScheduleValue.getPaperSubmitOpenAnnouncementDate())
-                                .build()
-                        )
-                        .paperSubmitTerm(AnnouncementDetailsResponse.SupplySchedule.PaperSubmitTerm.innerBuilder()
-                                .label("서류접수기간")
-                                .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getWinnerPaperSubmitStartDate(), lhDetailSupplyScheduleValue.getWinnerPaperSubmitEndDate()))
-                                .build()
-                        )
-                        .contractTerm(AnnouncementDetailsResponse.SupplySchedule.ContractTerm.innerBuilder()
-                                .label("계약체결기간")
-                                .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getContractStartDate(), lhDetailSupplyScheduleValue.getContractEndDate()))
-                                .build()
-                        )
-                        .applicationTerm(AnnouncementDetailsResponse.SupplySchedule.ApplicationTerm.innerBuilder()
-                                .label("접수기간")
-                                .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getApplicationStartDate(), lhDetailSupplyScheduleValue.getApplicationEndDate()))
-                                .build()
-                        )
-                        .houseBrowseTerm(AnnouncementDetailsResponse.SupplySchedule.HouseBrowseTerm.innerBuilder()
-                                .label("주택열람기간")
-                                .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getHouseBrowseStartDate(), lhDetailSupplyScheduleValue.getHouseBrowseEndDate()))
-                                .build())
-                        .supplyScheduleGuide(AnnouncementDetailsResponse.SupplySchedule.SupplyScheduleGuide.innerBuilder()
-                                .label(lhDetailSupplyScheduleLabel.getSupplyScheduleGuide())
-                                .value(lhDetailSupplyScheduleValue.getSupplyScheduleGuide())
-                                .build()
-                        )
-                        .build()
-                )
-                .toList();
+        for(LHAnnouncementDetailResponse.SupplySchedule.Value lhDetailSupplyScheduleValue : lhDetail.getSupplySchedule().getValues()) {
+            String houseComplexName = "";
+            if (StringUtils.hasLength(lhDetailSupplyScheduleValue.getHouseComplexName())) {
+                houseComplexName = lhDetailSupplyScheduleValue.getHouseComplexName();
+            } else {
+                houseComplexName = lhDetail.getHouseComplex().getValues().stream()
+                        .filter(houseComplexValue -> houseComplexValue.getHouseComplexName().equals(lhDetailSupplyScheduleValue.getHouseComplexName()))
+                        .findAny()
+                        .map(LHAnnouncementDetailResponse.HouseComplex.Value::getHouseComplexDetailAddress)
+                        .orElse("");
+            }
+
+            supplySchedules.add(AnnouncementDetailsResponse.SupplySchedule.builder()
+                    .target(AnnouncementDetailsResponse.SupplySchedule.Target.innerBuilder()
+                            .label(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
+                                    ? lhDetailSupplyScheduleLabel.getTarget()
+                                    : lhDetailSupplyScheduleLabel.getHouseComplexName()
+                            )
+                            .value(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
+                                    ? lhDetailSupplyScheduleValue.getTarget()
+                                    : houseComplexName
+                            )
+                            .build()
+                    )
+                    .applicationDatetime(AnnouncementDetailsResponse.SupplySchedule.ApplicationDatetime.innerBuilder()
+                            .label(lhDetailSupplyScheduleLabel.getApplicationDatetime())
+                            .value(lhDetailSupplyScheduleValue.getApplicationDatetime())
+                            .build()
+                    )
+                    .applicationMethod(AnnouncementDetailsResponse.SupplySchedule.ApplicationMethod.innerBuilder()
+                            .label(lhDetailSupplyScheduleLabel.getApplicationMethod())
+                            .value(lhDetailSupplyScheduleValue.getApplicationMethod())
+                            .build()
+                    )
+                    .winnerAnnouncementDate(AnnouncementDetailsResponse.SupplySchedule.WinnerAnnouncementDate.innerBuilder()
+                            .label(lhDetailSupplyScheduleLabel.getWinnerAnnouncementDate())
+                            .value(lhDetailSupplyScheduleValue.getWinnerAnnouncementDate())
+                            .build()
+                    )
+                    .paperSubmitOpenAnnouncementDate(AnnouncementDetailsResponse.SupplySchedule.PaperSubmitOpenAnnouncementDate.innerBuilder()
+                            .label(lhDetailSupplyScheduleLabel.getPaperSubmitOpenAnnouncementDate())
+                            .value(lhDetailSupplyScheduleValue.getPaperSubmitOpenAnnouncementDate())
+                            .build()
+                    )
+                    .paperSubmitTerm(AnnouncementDetailsResponse.SupplySchedule.PaperSubmitTerm.innerBuilder()
+                            .label("서류접수기간")
+                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getWinnerPaperSubmitStartDate(), lhDetailSupplyScheduleValue.getWinnerPaperSubmitEndDate()))
+                            .build()
+                    )
+                    .contractTerm(AnnouncementDetailsResponse.SupplySchedule.ContractTerm.innerBuilder()
+                            .label("계약체결기간")
+                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getContractStartDate(), lhDetailSupplyScheduleValue.getContractEndDate()))
+                            .build()
+                    )
+                    .applicationTerm(AnnouncementDetailsResponse.SupplySchedule.ApplicationTerm.innerBuilder()
+                            .label("접수기간")
+                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getApplicationStartDate(), lhDetailSupplyScheduleValue.getApplicationEndDate()))
+                            .build()
+                    )
+                    .houseBrowseTerm(AnnouncementDetailsResponse.SupplySchedule.HouseBrowseTerm.innerBuilder()
+                            .label("주택열람기간")
+                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getHouseBrowseStartDate(), lhDetailSupplyScheduleValue.getHouseBrowseEndDate()))
+                            .build())
+                    .supplyScheduleGuide(AnnouncementDetailsResponse.SupplySchedule.SupplyScheduleGuide.innerBuilder()
+                            .label(lhDetailSupplyScheduleLabel.getSupplyScheduleGuide())
+                            .value(lhDetailSupplyScheduleValue.getSupplyScheduleGuide())
+                            .build()
+                    )
+                    .build()
+            );
+        }
+
+        return supplySchedules;
     }
 
     private AnnouncementDetailsResponse.Etc buildEtcFrom(LHAnnouncementDetailResponse lhDetail) {
         LHAnnouncementDetailResponse.Etc etc = lhDetail.getEtcInfo();
+
         return AnnouncementDetailsResponse.Etc.builder()
                 .description(AnnouncementDetailsResponse.Etc.Description.innerBuilder()
                         .label(etc.getLabel().getDescription())
@@ -396,6 +355,7 @@ public class AnnouncementService {
         LHAnnouncementDetailResponse.Reception.Value receptionValue = reception.getValues().stream()
                 .findFirst()
                 .orElse(new LHAnnouncementDetailResponse.Reception.Value());
+
         return AnnouncementDetailsResponse.Reception.builder()
                 .address(AnnouncementDetailsResponse.Reception.Address.innerBuilder()
                         .label(reception.getLabel().getAddress())
@@ -425,200 +385,38 @@ public class AnnouncementService {
                 .build();
     }
 
-    /**
-     * 공고상세 데이터 - 단지 데이터 Build
-     *
-     */
-    private List<AnnouncementDetailsResponse.HouseComplex> buildHouseComplexesFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse.Label lhSupplyInfoLabel, List<LHAnnouncementSupplyInfoResponse.Value> lhSupplyInfoValues, String houseSupplyTypeCode) {
-        List<AnnouncementDetailsResponse.HouseComplex> result = new ArrayList<>();
+    private List<AnnouncementDetailsResponse.HouseComplex> buildHouseComplexesFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo) {
+        List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = new ArrayList<>();
 
-        // 단지 및 단지 하위 데이터 추출
-        LHAnnouncementDetailResponse.HouseComplex lhDetailHouseComplex = lhDetail.getHouseComplex();
-        LHAnnouncementDetailResponse.HouseComplexAttachment lhDetailHouseComplexAttachment = lhDetail.getHouseComplexAttachment();
+        for (LHAnnouncementDetailResponse.HouseComplex.Value lhDetailHouseComplexValue : lhDetail.getHouseComplex().getValues()) {
+            AnnouncementDetailsResponse.HouseComplex houseComplex = AnnouncementDetailsResponse.HouseComplex.buildFrom(lhDetail.getHouseComplex().getLabel(), lhDetailHouseComplexValue);
 
-        for (LHAnnouncementDetailResponse.HouseComplex.Value lhDetailhouseComplexValue : lhDetailHouseComplex.getValues()) {
-            String houseComplexName = lhDetailhouseComplexValue.getHouseComplexName();
+            List<AnnouncementDetailsResponse.HouseType> houseTypes = buildHouseTypesFrom(lhSupplyInfo, lhDetailHouseComplexValue.getHouseComplexName());
+            List<AnnouncementDetailsResponse.Attachment> attachments = buildAttachmentsFrom(lhDetail.getHouseComplexAttachment(), lhDetailHouseComplexValue.getHouseComplexName());
 
-            List<LHAnnouncementDetailResponse.HouseComplexAttachment.Value> lhHouseComplexAttachmentValues = lhDetailHouseComplexAttachment.getValues().stream()
-                    .filter(attachment -> isEqualsIgnoringWhitespaces(attachment.getHouseComplexName(), houseComplexName))
-                    .toList();
+            houseComplex.setHouseTypes(houseTypes);
+            houseComplex.setAttachments(attachments);
 
-            List<AnnouncementDetailsResponse.Attachment> attachments = buildAttachmentsFrom(lhDetailHouseComplexAttachment, houseComplexName, lhHouseComplexAttachmentValues);
-            List<AnnouncementDetailsResponse.HouseType> houseTypes = buildHouseTypesFrom(lhSupplyInfoLabel, lhSupplyInfoValues, houseComplexName);
-
-            result.add(AnnouncementDetailsResponse.HouseComplex.builder()
-                    .name(AnnouncementDetailsResponse.HouseComplex.Name.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getHouseComplexName())
-                            .value(lhDetailhouseComplexValue.getHouseComplexName())
-                            .build()
-                    )
-                    .address(AnnouncementDetailsResponse.HouseComplex.Address.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getHouseComplexAddress())
-                            .value(lhDetailhouseComplexValue.getHouseComplexAddress())
-                            .build()
-                    )
-                    .detailAddress(AnnouncementDetailsResponse.HouseComplex.DetailAddress.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getHouseComplexDetailAddress())
-                            .value(lhDetailhouseComplexValue.getHouseComplexDetailAddress())
-                            .build()
-                    )
-                    .netLeasableAreaRange(AnnouncementDetailsResponse.HouseComplex.NetLeasableAreaRange.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getNetLeasableArea())
-                            .value(lhDetailhouseComplexValue.getNetLeasableArea())
-                            .build()
-                    )
-                    .totalOfHousehold(AnnouncementDetailsResponse.HouseComplex.TotalOfHousehold.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getTotalHouseholdCount())
-                            .value(lhDetailhouseComplexValue.getTotalHouseholdCount())
-                            .build()
-                    )
-                    .heatingTypeName(AnnouncementDetailsResponse.HouseComplex.HeatingTypeName.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getHeatingTypeName())
-                            .value(lhDetailhouseComplexValue.getHeatingTypeName())
-                            .build()
-                    )
-                    .expectedMoveInDate(AnnouncementDetailsResponse.HouseComplex.ExpectedMoveInDate.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getExpectedMoveInDate())
-                            .value(lhDetailhouseComplexValue.getExpectedMoveInDate())
-                            .build()
-                    )
-                    .trafficFacilities(AnnouncementDetailsResponse.HouseComplex.TrafficFacilities.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getTrafficFacilities())
-                            .value(lhDetailhouseComplexValue.getTrafficFacilities())
-                            .build()
-                    )
-                    .educationFacilities(AnnouncementDetailsResponse.HouseComplex.EducationFacilities.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getEducationFacilities())
-                            .value(lhDetailhouseComplexValue.getEducationFacilities())
-                            .build()
-                    )
-                    .convenientFacilities(AnnouncementDetailsResponse.HouseComplex.ConvenientFacilities.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getConvenientFacilities())
-                            .value(lhDetailhouseComplexValue.getConvenientFacilities())
-                            .build()
-                    )
-                    .appurtenantFacilities(AnnouncementDetailsResponse.HouseComplex.AppurtenantFacilities.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getAppurtenantFacilities())
-                            .value(lhDetailhouseComplexValue.getAppurtenantFacilities())
-                            .build()
-                    )
-                    .supplyInfoGuide(AnnouncementDetailsResponse.HouseComplex.SupplyInfoGuide.innerBuilder()
-                            .label(lhDetailHouseComplex.getLabel().getSupplyInfoGuide())
-                            .value(lhDetailhouseComplexValue.getSupplyInfoGuide())
-                            .build()
-                    )
-                    .houseTypes(houseTypes)
-                    .attachments(attachments)
-                    .build()
-            );
-
+            houseComplexes.add(houseComplex);
         }
 
-        return result;
+        return houseComplexes;
     }
 
-    private List<AnnouncementDetailsResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse.HouseComplexAttachment lhDetailHouseComplexAttachment, String houseComplexName, List<LHAnnouncementDetailResponse.HouseComplexAttachment.Value> lhHouseComplexAttachmentValues) {
-        return lhHouseComplexAttachmentValues.stream()
-                .filter(houseComplexAttachment -> isEqualsIgnoringWhitespaces(houseComplexAttachment.getHouseComplexName(), houseComplexName))
-                .map(houseComplexAttachment -> AnnouncementDetailsResponse.Attachment.builder()
-                        .fileName(AnnouncementDetailsResponse.Attachment.FileName.innerBuilder()
-                                .label(lhDetailHouseComplexAttachment.getLabel().getFileName())
-                                .value(houseComplexAttachment.getFileName())
-                                .build()
-                        )
-                        .fileTypeName(AnnouncementDetailsResponse.Attachment.FileTypeName.innerBuilder()
-                                .label(lhDetailHouseComplexAttachment.getLabel().getFileExtends())
-                                .value(houseComplexAttachment.getFileExtends())
-                                .build()
-                        )
-                        .downloadUrl(AnnouncementDetailsResponse.Attachment.DownloadUrl.innerBuilder()
-                                .label(lhDetailHouseComplexAttachment.getLabel().getDownloadUrl())
-                                .value(houseComplexAttachment.getDownloadUrl())
-                                .build()
-                        )
-                        .build()
-                )
+    private List<AnnouncementDetailsResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse.HouseComplexAttachment lhDetailHouseComplexAttachment, String houseComplexName) {
+        return lhDetailHouseComplexAttachment.getValues().stream()
+                .filter(lhDetailHouseComplexAttachmentValue -> isEqualsIgnoringWhitespaces(lhDetailHouseComplexAttachmentValue.getHouseComplexName(), houseComplexName))
+                .map(lhDetailHouseComplexAttachmentValue -> AnnouncementDetailsResponse.Attachment.buildFrom(lhDetailHouseComplexAttachment.getLabel(), lhDetailHouseComplexAttachmentValue))
                 .toList();
     }
 
-    private List<AnnouncementDetailsResponse.HouseType> buildHouseTypesFrom(LHAnnouncementSupplyInfoResponse.Label lhSupplyInfoLabel, List<LHAnnouncementSupplyInfoResponse.Value> lhSupplyInfoValues, String houseComplexName) {
-        return lhSupplyInfoValues.stream()
+    private List<AnnouncementDetailsResponse.HouseType> buildHouseTypesFrom(LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseComplexName) {
+        LHAnnouncementSupplyInfoResponse.Label lhSupplyInfoLabel = lhSupplyInfo.getLabel();
+
+        return lhSupplyInfo.getValues().stream()
                 .filter(lhSupplyInfoValue -> isEqualsIgnoringWhitespaces(lhSupplyInfoValue.getHouseComplexName(), houseComplexName))
-                .map(lhSupplyInfoValue -> AnnouncementDetailsResponse.HouseType.builder()
-                        .houseTypeName(AnnouncementDetailsResponse.HouseType.HouseTypeName.innerBuilder()
-                                .label(lhSupplyInfoLabel.getHouseTypeName())
-                                .value(lhSupplyInfoValue.getHouseTypeName())
-                                .build()
-                        )
-                        .supplyArea(AnnouncementDetailsResponse.HouseType.SupplyArea.innerBuilder()
-                                .label(lhSupplyInfoLabel.getSupplyArea())
-                                .value(lhSupplyInfoValue.getSupplyArea())
-                                .build()
-                        )
-                        .netLeasableArea(AnnouncementDetailsResponse.HouseType.NetLeasableArea.innerBuilder()
-                                .label(lhSupplyInfoLabel.getNetLeasableArea())
-                                .value(lhSupplyInfoValue.getNetLeasableArea())
-                                .build()
-                        )
-                        .numberOfHousehold(AnnouncementDetailsResponse.HouseType.NumberOfHousehold.innerBuilder()
-                                .label(lhSupplyInfoLabel.getNumberOfHousehold())
-                                .value(lhSupplyInfoValue.getNumberOfHousehold())
-                                .build()
-                        )
-                        .numberOfSupplyHousehold(AnnouncementDetailsResponse.HouseType.NumberOfSupplyHousehold.innerBuilder()
-                                .label(lhSupplyInfoLabel.getNumberOfSupplyHousehold())
-                                .value(lhSupplyInfoValue.getNumberOfSupplyHousehold())
-                                .build()
-                        )
-                        .numberOfApplicants(AnnouncementDetailsResponse.HouseType.NumberOfApplicants.innerBuilder()
-                                .label(lhSupplyInfoLabel.getNumberOfApplicants())
-                                .value(lhSupplyInfoValue.getNumberOfApplicants())
-                                .build()
-                        )
-                        .numberOfCandidates(AnnouncementDetailsResponse.HouseType.NumberOfCandidates.innerBuilder()
-                                .label(lhSupplyInfoLabel.getNumberOfCandidates())
-                                .value(lhSupplyInfoValue.getNumberOfCandidates())
-                                .build()
-                        )
-                        .amount(AnnouncementDetailsResponse.HouseType.Amount.innerBuilder()
-                                .label(lhSupplyInfoLabel.getAmount())
-                                .value(lhSupplyInfoValue.getAmount())
-                                .build()
-                        )
-                        .rentFee(AnnouncementDetailsResponse.HouseType.RentFee.innerBuilder()
-                                .label(lhSupplyInfoLabel.getRentFee())
-                                .value(lhSupplyInfoValue.getRentFee())
-                                .build()
-                        )
-                        .rentFeeEtc(AnnouncementDetailsResponse.HouseType.RentFeeEtc.innerBuilder()
-                                .label(lhSupplyInfoLabel.getRentFeeEtc())
-                                .value(lhSupplyInfoValue.getRentFeeEtc())
-                                .build()
-                        )
-                        .build()
-                )
+                .map(lhSupplyInfoValue -> AnnouncementDetailsResponse.HouseType.buildFrom(lhSupplyInfoLabel, lhSupplyInfoValue))
                 .toList();
-    }
-
-
-    private AnnouncementDetailRequest buildAnnouncementDetailRequest(LHAnnouncementResponse announcement) {
-        return AnnouncementDetailRequest.builder()
-                .announcementId(announcement.getId())
-                .announcementTypeCode(announcement.getAnnouncementTypeCode())
-                .announcementDetailTypeCode(announcement.getAnnouncementDetailTypeCode())
-                .crmCode(announcement.getCrmCode())
-                .supplyTypeCode(announcement.getSupplyTypeCode())
-                .build();
-    }
-
-    private AnnouncementSupplyInfoRequest buildAnnouncementSupplyInfoRequest(LHAnnouncementResponse announcement) {
-        return AnnouncementSupplyInfoRequest.builder()
-                .announcementId(announcement.getId())
-                .announcementTypeCode(announcement.getAnnouncementTypeCode())
-                .announcementDetailTypeCode(announcement.getAnnouncementDetailTypeCode())
-                .crmCode(announcement.getCrmCode())
-                .supplyTypeCode(announcement.getSupplyTypeCode())
-                .build();
     }
 
     private boolean isEqualsIgnoringWhitespaces(String s1, String s2) {

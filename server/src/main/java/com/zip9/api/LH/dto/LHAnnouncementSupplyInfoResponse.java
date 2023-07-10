@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -14,21 +16,72 @@ import java.util.*;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LHAnnouncementSupplyInfoResponse {
+    @JsonProperty("dsList01Nm")
+    private Label label01;
+    @JsonProperty("dsList02Nm")
+    private Label label02;
+    @JsonProperty("dsList03Nm")
+    private Label label03;
+    @JsonProperty("dsList01")
     @Builder.Default
-    private List<Label> labels = new ArrayList<>();
+    private List<Value> values01 = new ArrayList<>();
+    @JsonProperty("dsList02")
     @Builder.Default
-    private List<List<Value>> values = new ArrayList<>();
+    private List<Value> values02 = new ArrayList<>();
+    @JsonProperty("dsList03")
+    @Builder.Default
+    private List<Value> values03 = new ArrayList<>();
 
     @JsonSetter("dsList01Nm")
-    @JsonAlias({"dsList02Nm", "dsList03Nm"})
-    public void setLabels(List<Label> labels) {
-        this.labels.addAll(labels);
+    public void setLabel01(List<Label> labels) {
+        this.label01 = labels.stream().filter(ObjectUtils::isNotEmpty).findAny().orElse(null);
+    }
+    @JsonSetter("dsList02Nm")
+    public void setLabel02(List<Label> labels) {
+        this.label02 = labels.stream().filter(ObjectUtils::isNotEmpty).findAny().orElse(null);
+    }
+    @JsonSetter("dsList03Nm")
+    public void setLabel03(List<Label> labels) {
+        this.label03 = labels.stream().filter(ObjectUtils::isNotEmpty).findAny().orElse(null);
     }
 
     @JsonSetter("dsList01")
-    @JsonAlias({"dsList02", "dsList03"})
-    public void setValues(List<Value> values) {
-        this.values.add(values);
+    public void setValues01(List<Value> values) {
+        this.values01 = values.stream().filter(ObjectUtils::isNotEmpty).toList();
+    }
+
+    @JsonSetter("dsList02")
+    public void setValues02(List<Value> values) {
+        this.values02 = values.stream().filter(ObjectUtils::isNotEmpty).toList();
+    }
+
+    @JsonSetter("dsList03")
+    public void setValues03(List<Value> values) {
+        this.values03 = values.stream().filter(ObjectUtils::isNotEmpty).toList();
+    }
+
+    public Label getLabel() {
+        if (!values01.isEmpty()) {
+            return label01;
+        } else if (!values02.isEmpty()) {
+            return label02;
+        } else if (!values03.isEmpty()) {
+            return label03;
+        } else {
+            return new Label();
+        }
+    }
+
+    public List<Value> getValues() {
+        if (!values01.isEmpty()) {
+            return values01;
+        } else if (!values02.isEmpty()) {
+            return values02;
+        } else if (!values03.isEmpty()) {
+            return values03;
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     @Getter
@@ -36,7 +89,7 @@ public class LHAnnouncementSupplyInfoResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Item {
+    public static class SupplyInfo {
         @Builder.Default
         private List<String> addresses = new ArrayList<>();
         @JsonSetter("BZDT_NM")
@@ -90,7 +143,7 @@ public class LHAnnouncementSupplyInfoResponse {
 
     @Getter
     @NoArgsConstructor
-    public static class Label extends Item {
+    public static class Label extends SupplyInfo {
         public Label(List<String> addresses, String houseInfo, String houseTypeName, String supplyArea, String netLeasableArea, String numberOfHousehold, String numberOfSupplyHousehold, String numberOfApplicants, String numberOfCandidates, String amount, String rentFee, String rentFeeEtc) {
             super(addresses, houseInfo, houseTypeName, supplyArea, netLeasableArea, numberOfHousehold, numberOfSupplyHousehold, numberOfApplicants, numberOfCandidates, amount, rentFee, rentFeeEtc);
         }
@@ -98,7 +151,7 @@ public class LHAnnouncementSupplyInfoResponse {
 
     @Getter
     @NoArgsConstructor
-    public static class Value extends Item {
+    public static class Value extends SupplyInfo {
         public Value(List<String> addresses, String houseInfo, String houseTypeName, String supplyArea, String netLeasableArea, String numberOfHousehold, String numberOfSupplyHousehold, String numberOfApplicants, String numberOfCandidates, String amount, String rentFee, String rentFeeEtc) {
             super(addresses, houseInfo, houseTypeName, supplyArea, netLeasableArea, numberOfHousehold, numberOfSupplyHousehold, numberOfApplicants, numberOfCandidates, amount, rentFee, rentFeeEtc);
         }

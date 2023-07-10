@@ -1,5 +1,6 @@
 package com.zip9.api.announcement.dto;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.zip9.api.LH.enums.City;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
@@ -17,20 +18,27 @@ import java.util.List;
 @AllArgsConstructor
 public class AnnouncementResponse {
     private Meta meta;
-    private LinkedHashMap<String, List<Announcement>> announcements;
+    @JsonUnwrapped
+    private Item item;
 
     public AnnouncementResponse() {
         meta = new Meta();
-        announcements = new LinkedHashMap<>();
+        item = new Item();
+    }
 
-        Arrays.stream(City.values())
-                .forEach(city -> announcements.put(city.shortName, new ArrayList<>()));
+    @Getter
+    public static class Item {
+        private LinkedHashMap<String, List<Announcement>> announcements = new LinkedHashMap<>();
+
+        public Item() {
+            Arrays.stream(City.values())
+                    .forEach(city -> announcements.put(city.shortName, new ArrayList<>()));
+        }
     }
 
     @Getter
     public static class Meta {
-        @Parameter(description = "도시별 공고수")
-        LinkedHashMap<String, Integer> numberOfAnnouncementsByCity = new LinkedHashMap<>();
+        private LinkedHashMap<String, Integer> numberOfAnnouncementsByCity = new LinkedHashMap<>();
 
         public Meta() {
             Arrays.stream(City.values())

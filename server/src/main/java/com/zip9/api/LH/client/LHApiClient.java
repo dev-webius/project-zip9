@@ -77,6 +77,7 @@ public class LHApiClient implements Client {
 
         return mapper.convertValue(flux.collectList().block().get(1), LHAnnouncementSupplyInfoResponse.class);
     }
+
     @Override
     public LHAnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
         Flux<Object> flux = webClient

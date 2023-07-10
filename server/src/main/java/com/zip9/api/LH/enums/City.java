@@ -1,5 +1,6 @@
 package com.zip9.api.LH.enums;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Arrays;
@@ -23,12 +24,12 @@ public enum City {
     GYEONGBUK("47", "경상북도", "경북"),
     GYEONGNAM("48", "경상남도", "경남"),
     JEJU("50", "제주특별자치도", "제주"),
+    @Hidden
     ETC("99", "기타", "기타");
 
     public final String code;
     public final String name;
     public final String shortName;
-
 
     City(String code, String name, String shortName) {
         this.code = code;
