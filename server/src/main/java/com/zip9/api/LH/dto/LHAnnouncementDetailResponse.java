@@ -205,7 +205,7 @@ public class LHAnnouncementDetailResponse {
             private String houseComplexName = "";
             @JsonProperty("SL_PAN_AHFL_DS_CD_NM")
             @JsonAlias("LS_SPL_INF_UPL_FL_DS_CD_NM")
-            private String fileExtends = "";
+            private String fileTypeName = "";
             @JsonProperty("CMN_AHFL_NM")
             private String fileName = "";
             @JsonProperty("AHFL_URL")
@@ -219,7 +219,7 @@ public class LHAnnouncementDetailResponse {
             private String houseComplexName = "";
             @JsonProperty("SL_PAN_AHFL_DS_CD_NM")
             @JsonAlias("LS_SPL_INF_UPL_FL_DS_CD_NM")
-            private String fileExtends = "";
+            private String fileTypeName = "";
             @JsonProperty("CMN_AHFL_NM")
             private String fileName = "";
             @JsonProperty("AHFL_URL")
@@ -348,7 +348,7 @@ public class LHAnnouncementDetailResponse {
         @Getter
         public static class Label {
             @JsonProperty("SL_PAN_AHFL_DS_CD_NM")
-            private String fileExtends = "";
+            private String fileTypeName = "";
             @JsonProperty("CMN_AHFL_NM")
             private String fileName = "";
             @JsonProperty("AHFL_URL")
@@ -358,7 +358,7 @@ public class LHAnnouncementDetailResponse {
         @Getter
         public static class Value {
             @JsonProperty("SL_PAN_AHFL_DS_CD_NM")
-            private String fileExtends = "";
+            private String fileTypeName = "";
             @JsonProperty("CMN_AHFL_NM")
             private String fileName = "";
             @JsonProperty("AHFL_URL")
@@ -383,14 +383,14 @@ public class LHAnnouncementDetailResponse {
         @Getter
         public static class Label {
             @JsonProperty("PAN_DTL_CTS")
-            private String description;
+            private String announcementDescription;
 
             @JsonProperty("ETC_FCTS")
             @JsonAlias({"ETC_CTS", "ETC_CTS2"})
-            private String remark1;
+            private String comment;
 
             @JsonProperty("ETC_CTS3")
-            private String remark2;
+            private String groupHomeAgency;
 
             @JsonProperty("CRC_RSN")
             private String correctOrCancelReason;
@@ -425,42 +425,42 @@ public class LHAnnouncementDetailResponse {
         public static class Value {
             @JsonProperty("PAN_DTL_CTS")
             @JsonAlias("CRC_RSN")
-            private String description;
+            private String announcementDescription = "";
 
             @JsonProperty("ETC_FCTS")
             @JsonAlias({"ETC_CTS", "ETC_CTS2"})
-            private String remark1;
+            private String comment = "";
 
             @JsonProperty("ETC_CTS3")
-            private String remark2;
+            private String groupHomeAgency = "";
 
             @JsonProperty("CRC_RSN")
-            private String correctOrCancelReason;
+            private String correctOrCancelReason = "";
 
             @JsonProperty("ARAG_RCR_HSH_CTS")
             @JsonAlias("EPZ_TRG_ARA")
-            private String targetArea;
+            private String targetArea = "";
 
             @JsonProperty("TRG_HS_CTS")
-            private String targetHouse;
+            private String targetHouse = "";
 
             @JsonProperty("LSTR_CTS")
-            private String leaseTerms;
+            private String leaseTerms = "";
 
             @JsonProperty("LSC_CTS")
-            private String leaseCondition;
+            private String leaseCondition = "";
 
             @JsonProperty("CAU_FCTS")
-            private String caution;
+            private String caution = "";
 
             @JsonProperty("SPPT_LMT_AMT_CTS")
-            private String supportLimitAmount;
+            private String supportLimitAmount = "";
 
             @JsonProperty("SPL_HO_CNT_CTS")
-            private String numberOfSupplyHousehold;
+            private String numberOfSupplyHousehold = "";
 
             @JsonProperty("RQS_PLC_CTS")
-            private String receptionAddress;
+            private String receptionAddress = "";
 
         }
     }

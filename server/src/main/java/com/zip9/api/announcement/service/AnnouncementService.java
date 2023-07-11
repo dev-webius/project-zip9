@@ -94,20 +94,20 @@ public class AnnouncementService {
                 AnnouncementDetailsResponse.HouseComplex houseComplex = mapOfHouseComplexes.get(key);
                 GeocodingResponse.Address address = new GeocodingResponse.Address();
 
-                if (StringUtils.hasLength(houseComplex.getName().getValue())) {
-                    address = geocodingService.findAddress(houseComplex.getName().getValue());
+                if (StringUtils.hasLength(houseComplex.getName())) {
+                    address = geocodingService.findAddress(houseComplex.getName());
                 }
 
-                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getDetailAddress().getValue())) {
-                    address = geocodingService.findAddress(houseComplex.getDetailAddress().getValue());
+                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getDetailAddress())) {
+                    address = geocodingService.findAddress(houseComplex.getDetailAddress());
                 }
 
-                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress().getValue() + " " + houseComplex.getDetailAddress().getValue())) {
-                    address = geocodingService.findAddress(houseComplex.getAddress().getValue() + " " + houseComplex.getDetailAddress().getValue());
+                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress() + " " + houseComplex.getDetailAddress())) {
+                    address = geocodingService.findAddress(houseComplex.getAddress() + " " + houseComplex.getDetailAddress());
                 }
 
-                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress().getValue())) {
-                    address = geocodingService.findAddress(houseComplex.getAddress().getValue());
+                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress())) {
+                    address = geocodingService.findAddress(houseComplex.getAddress());
                 }
 
                 if (address.hasPosition()) {
@@ -173,61 +173,19 @@ public class AnnouncementService {
             }
 
             supplySchedules.add(AnnouncementDetailsResponse.SupplySchedule.builder()
-                    .target(AnnouncementDetailsResponse.SupplySchedule.Target.innerBuilder()
-                            .label(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
-                                    ? lhDetailSupplyScheduleLabel.getTarget()
-                                    : lhDetailSupplyScheduleLabel.getHouseComplexName()
-                            )
-                            .value(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
-                                    ? lhDetailSupplyScheduleValue.getTarget()
-                                    : houseComplexName
-                            )
-                            .build()
+                    .target(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
+                            ? lhDetailSupplyScheduleValue.getTarget()
+                            : houseComplexName
                     )
-                    .applicationDatetime(AnnouncementDetailsResponse.SupplySchedule.ApplicationDatetime.innerBuilder()
-                            .label(lhDetailSupplyScheduleLabel.getApplicationDatetime())
-                            .value(lhDetailSupplyScheduleValue.getApplicationDatetime())
-                            .build()
-                    )
-                    .applicationMethod(AnnouncementDetailsResponse.SupplySchedule.ApplicationMethod.innerBuilder()
-                            .label(lhDetailSupplyScheduleLabel.getApplicationMethod())
-                            .value(lhDetailSupplyScheduleValue.getApplicationMethod())
-                            .build()
-                    )
-                    .winnerAnnouncementDate(AnnouncementDetailsResponse.SupplySchedule.WinnerAnnouncementDate.innerBuilder()
-                            .label(lhDetailSupplyScheduleLabel.getWinnerAnnouncementDate())
-                            .value(lhDetailSupplyScheduleValue.getWinnerAnnouncementDate())
-                            .build()
-                    )
-                    .paperSubmitOpenAnnouncementDate(AnnouncementDetailsResponse.SupplySchedule.PaperSubmitOpenAnnouncementDate.innerBuilder()
-                            .label(lhDetailSupplyScheduleLabel.getPaperSubmitOpenAnnouncementDate())
-                            .value(lhDetailSupplyScheduleValue.getPaperSubmitOpenAnnouncementDate())
-                            .build()
-                    )
-                    .paperSubmitTerm(AnnouncementDetailsResponse.SupplySchedule.PaperSubmitTerm.innerBuilder()
-                            .label("서류접수기간")
-                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getWinnerPaperSubmitStartDate(), lhDetailSupplyScheduleValue.getWinnerPaperSubmitEndDate()))
-                            .build()
-                    )
-                    .contractTerm(AnnouncementDetailsResponse.SupplySchedule.ContractTerm.innerBuilder()
-                            .label("계약체결기간")
-                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getContractStartDate(), lhDetailSupplyScheduleValue.getContractEndDate()))
-                            .build()
-                    )
-                    .applicationTerm(AnnouncementDetailsResponse.SupplySchedule.ApplicationTerm.innerBuilder()
-                            .label("접수기간")
-                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getApplicationStartDate(), lhDetailSupplyScheduleValue.getApplicationEndDate()))
-                            .build()
-                    )
-                    .houseBrowseTerm(AnnouncementDetailsResponse.SupplySchedule.HouseBrowseTerm.innerBuilder()
-                            .label("주택열람기간")
-                            .value(makeTermValueFrom(lhDetailSupplyScheduleValue.getHouseBrowseStartDate(), lhDetailSupplyScheduleValue.getHouseBrowseEndDate()))
-                            .build())
-                    .supplyScheduleGuide(AnnouncementDetailsResponse.SupplySchedule.SupplyScheduleGuide.innerBuilder()
-                            .label(lhDetailSupplyScheduleLabel.getSupplyScheduleGuide())
-                            .value(lhDetailSupplyScheduleValue.getSupplyScheduleGuide())
-                            .build()
-                    )
+                    .applicationDatetime(lhDetailSupplyScheduleValue.getApplicationDatetime())
+                    .applicationMethod(lhDetailSupplyScheduleValue.getApplicationMethod())
+                    .winnerAnnouncementDate(lhDetailSupplyScheduleValue.getWinnerAnnouncementDate())
+                    .paperSubmitOpenAnnouncementDate(lhDetailSupplyScheduleValue.getPaperSubmitOpenAnnouncementDate())
+                    .paperSubmitTerm(makeTermValueFrom(lhDetailSupplyScheduleValue.getWinnerPaperSubmitStartDate(), lhDetailSupplyScheduleValue.getWinnerPaperSubmitEndDate()))
+                    .contractTerm(makeTermValueFrom(lhDetailSupplyScheduleValue.getContractStartDate(), lhDetailSupplyScheduleValue.getContractEndDate()))
+                    .applicationTerm(makeTermValueFrom(lhDetailSupplyScheduleValue.getApplicationStartDate(), lhDetailSupplyScheduleValue.getApplicationEndDate()))
+                    .houseBrowseTerm(makeTermValueFrom(lhDetailSupplyScheduleValue.getHouseBrowseStartDate(), lhDetailSupplyScheduleValue.getHouseBrowseEndDate()))
+                    .supplyScheduleGuide(lhDetailSupplyScheduleValue.getSupplyScheduleGuide())
                     .build()
             );
         }
@@ -237,116 +195,23 @@ public class AnnouncementService {
 
     private AnnouncementDetailsResponse.Etc buildEtcFrom(LHAnnouncementDetailResponse lhDetail) {
         LHAnnouncementDetailResponse.Etc etc = lhDetail.getEtcInfo();
+        LHAnnouncementDetailResponse.Etc.Value lhEtcValue = etc.getValues().stream()
+                .findFirst()
+                .orElse(new LHAnnouncementDetailResponse.Etc.Value());
 
         return AnnouncementDetailsResponse.Etc.builder()
-                .description(AnnouncementDetailsResponse.Etc.Description.innerBuilder()
-                        .label(etc.getLabel().getDescription())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getDescription()
-                        )
-                        .build()
-                )
-                .remark1(AnnouncementDetailsResponse.Etc.Remark1.innerBuilder()
-                        .label(etc.getLabel().getRemark1())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getRemark1()
-                        )
-                        .build()
-                )
-                .remark2(AnnouncementDetailsResponse.Etc.Remark2.innerBuilder()
-                        .label(etc.getLabel().getRemark2())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getRemark2()
-                        )
-                        .build()
-                )
-                .correctOrCancelReason(AnnouncementDetailsResponse.Etc.CorrectOrCancelReason.innerBuilder()
-                        .label(etc.getLabel().getCorrectOrCancelReason())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getCorrectOrCancelReason()
-                        )
-                        .build()
-                )
-                .targetArea(AnnouncementDetailsResponse.Etc.TargetArea.innerBuilder()
-                        .label(etc.getLabel().getTargetArea())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getTargetArea()
-                        )
-                        .build()
-                )
-                .targetHouse(AnnouncementDetailsResponse.Etc.TargetHouse.innerBuilder()
-                        .label(etc.getLabel().getTargetHouse())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getTargetHouse()
-                        )
-                        .build()
-                )
-                .leaseTerms(AnnouncementDetailsResponse.Etc.LeaseTerms.innerBuilder()
-                        .label(etc.getLabel().getLeaseTerms())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getLeaseTerms()
-                        )
-                        .build()
-                )
-                .leaseCondition(AnnouncementDetailsResponse.Etc.LeaseCondition.innerBuilder()
-                        .label(etc.getLabel().getLeaseCondition())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getLeaseCondition()
-                        )
-                        .build()
-                )
-                .caution(AnnouncementDetailsResponse.Etc.Caution.innerBuilder()
-                        .label(etc.getLabel().getCaution())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getCaution()
-                        )
-                        .build()
-                )
-                .supportLimitAmount(AnnouncementDetailsResponse.Etc.SupportLimitAmount.innerBuilder()
-                        .label(etc.getLabel().getSupportLimitAmount())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getSupportLimitAmount()
-                        )
-                        .build()
-                )
-                .numberOfSupplyHousehold(AnnouncementDetailsResponse.Etc.NumberOfSupplyHousehold.innerBuilder()
-                        .label(etc.getLabel().getNumberOfSupplyHousehold())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getNumberOfSupplyHousehold()
-                        )
-                        .build()
-                )
-                .receptionAddress(AnnouncementDetailsResponse.Etc.ReceptionAddress.innerBuilder()
-                        .label(etc.getLabel().getReceptionAddress())
-                        .value(etc.getValues().stream()
-                                .findFirst()
-                                .orElse(new LHAnnouncementDetailResponse.Etc.Value())
-                                .getReceptionAddress()
-                        )
-                        .build()
-                )
+                .announcementDescription(lhEtcValue.getAnnouncementDescription())
+                .comment(lhEtcValue.getComment())
+                .groupHomeAgency(lhEtcValue.getGroupHomeAgency())
+                .correctOrCancelReason(lhEtcValue.getCorrectOrCancelReason())
+                .targetArea(lhEtcValue.getTargetArea())
+                .targetHouse(lhEtcValue.getTargetHouse())
+                .leaseTerms(lhEtcValue.getLeaseTerms())
+                .leaseCondition(lhEtcValue.getLeaseCondition())
+                .caution(lhEtcValue.getCaution())
+                .supportLimitAmount(lhEtcValue.getSupportLimitAmount())
+                .numberOfSupplyHousehold(lhEtcValue.getNumberOfSupplyHousehold())
+                .receptionAddress(lhEtcValue.getReceptionAddress())
                 .build();
     }
 
@@ -357,31 +222,11 @@ public class AnnouncementService {
                 .orElse(new LHAnnouncementDetailResponse.Reception.Value());
 
         return AnnouncementDetailsResponse.Reception.builder()
-                .address(AnnouncementDetailsResponse.Reception.Address.innerBuilder()
-                        .label(reception.getLabel().getAddress())
-                        .value(receptionValue.getAddress())
-                        .build()
-                )
-                .telephoneNumber(AnnouncementDetailsResponse.Reception.TelephoneNumber.innerBuilder()
-                        .label(reception.getLabel().getTelephoneNumber())
-                        .value(receptionValue.getTelephoneNumber())
-                        .build()
-                )
-                .operationTerm(AnnouncementDetailsResponse.Reception.OperationTerm.innerBuilder()
-                        .label(reception.getLabel().getOperationTerm())
-                        .value(makeTermValueFrom(receptionValue.getOpenDate(), receptionValue.getCloseDate()))
-                        .build()
-                )
-                .scheduleGuide(AnnouncementDetailsResponse.Reception.ScheduleGuide.innerBuilder()
-                        .label(reception.getLabel().getScheduleGuide())
-                        .value(receptionValue.getScheduleGuide())
-                        .build()
-                )
-                .receptionGuide(AnnouncementDetailsResponse.Reception.ReceptionGuide.innerBuilder()
-                        .label(reception.getLabel().getReceptionGuide())
-                        .value(receptionValue.getReceptionGuide())
-                        .build()
-                )
+                .address(receptionValue.getAddress())
+                .telephoneNumber(receptionValue.getTelephoneNumber())
+                .operationTerm(makeTermValueFrom(receptionValue.getOpenDate(), receptionValue.getCloseDate()))
+                .scheduleGuide(receptionValue.getScheduleGuide())
+                .receptionGuide(receptionValue.getReceptionGuide())
                 .build();
     }
 
@@ -389,7 +234,7 @@ public class AnnouncementService {
         List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = new ArrayList<>();
 
         for (LHAnnouncementDetailResponse.HouseComplex.Value lhDetailHouseComplexValue : lhDetail.getHouseComplex().getValues()) {
-            AnnouncementDetailsResponse.HouseComplex houseComplex = AnnouncementDetailsResponse.HouseComplex.buildFrom(lhDetail.getHouseComplex().getLabel(), lhDetailHouseComplexValue);
+            AnnouncementDetailsResponse.HouseComplex houseComplex = AnnouncementDetailsResponse.HouseComplex.buildFrom(lhDetailHouseComplexValue);
 
             List<AnnouncementDetailsResponse.HouseType> houseTypes = buildHouseTypesFrom(lhSupplyInfo, lhDetailHouseComplexValue.getHouseComplexName());
             List<AnnouncementDetailsResponse.Attachment> attachments = buildAttachmentsFrom(lhDetail.getHouseComplexAttachment(), lhDetailHouseComplexValue.getHouseComplexName());
@@ -406,7 +251,7 @@ public class AnnouncementService {
     private List<AnnouncementDetailsResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse.HouseComplexAttachment lhDetailHouseComplexAttachment, String houseComplexName) {
         return lhDetailHouseComplexAttachment.getValues().stream()
                 .filter(lhDetailHouseComplexAttachmentValue -> isEqualsIgnoringWhitespaces(lhDetailHouseComplexAttachmentValue.getHouseComplexName(), houseComplexName))
-                .map(lhDetailHouseComplexAttachmentValue -> AnnouncementDetailsResponse.Attachment.buildFrom(lhDetailHouseComplexAttachment.getLabel(), lhDetailHouseComplexAttachmentValue))
+                .map(AnnouncementDetailsResponse.Attachment::buildFrom)
                 .toList();
     }
 
@@ -415,7 +260,7 @@ public class AnnouncementService {
 
         return lhSupplyInfo.getValues().stream()
                 .filter(lhSupplyInfoValue -> isEqualsIgnoringWhitespaces(lhSupplyInfoValue.getHouseComplexName(), houseComplexName))
-                .map(lhSupplyInfoValue -> AnnouncementDetailsResponse.HouseType.buildFrom(lhSupplyInfoLabel, lhSupplyInfoValue))
+                .map(AnnouncementDetailsResponse.HouseType::buildFrom)
                 .toList();
     }
 

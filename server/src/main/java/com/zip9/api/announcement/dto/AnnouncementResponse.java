@@ -2,7 +2,7 @@ package com.zip9.api.announcement.dto;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.zip9.api.LH.enums.City;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,6 +38,7 @@ public class AnnouncementResponse {
 
     @Getter
     public static class Meta {
+        @Schema(description = "도시별 공고 수")
         private LinkedHashMap<String, Integer> numberOfAnnouncementsByCity = new LinkedHashMap<>();
 
         public Meta() {
@@ -53,13 +54,13 @@ public class AnnouncementResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Position {
-        @Parameter(description = "단지명")
+        @Schema(description = "단지명")
         String houseComplexName;
-        @Parameter(description = "주소")
+        @Schema(description = "주소")
         String address;
-        @Parameter(description = "경도")
+        @Schema(description = "경도")
         String x;
-        @Parameter(description = "위도")
+        @Schema(description = "위도")
         String y;
     }
 }

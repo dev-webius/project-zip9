@@ -1,13 +1,10 @@
 package com.zip9.api.LH.dto;
 
-import com.zip9.api.announcement.dto.AnnouncementRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Builder

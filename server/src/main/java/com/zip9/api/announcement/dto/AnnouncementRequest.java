@@ -59,7 +59,6 @@ public class AnnouncementRequest {
     @ArraySchema(schema = @Schema(implementation = AnnouncementStatus.class,
             description ="ANNOUNCED : 공고중, ACCEPTABLE : 접수중, ANNOUNCED_CORRECTLY : 정정공고중"))
 
-
     @Builder.Default
     private List<String> announcementStatus = new ArrayList<>();
 
