@@ -60,6 +60,7 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<Object> handleExceptionInternal(Exception e, Code code, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        e.printStackTrace();
         return super.handleExceptionInternal(
                 e,
                 ErrorResponse.of(code, code.getMessage(e)),

@@ -1,13 +1,7 @@
 package com.zip9.api.LH.service;
 
 import com.zip9.api.LH.client.Client;
-import com.zip9.api.LH.client.LHApiClient;
-import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
-import com.zip9.api.LH.dto.LHAnnouncementRequest;
-import com.zip9.api.LH.dto.LHAnnouncementResponse;
-import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
-import com.zip9.api.announcement.dto.AnnouncementDetailRequest;
-import com.zip9.api.announcement.dto.AnnouncementSupplyInfoRequest;
+import com.zip9.api.LH.dto.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +16,11 @@ public class LHService {
         return client.getAnnouncements(request);
     }
 
-    public LHAnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
+    public LHAnnouncementDetailResponse getAnnouncementDetail(LHAnnouncementDetailAndSupplyRequest request) {
         return client.getAnnouncementDetail(request);
     }
 
-    public LHAnnouncementSupplyInfoResponse getAnnouncementSupplyInfo(AnnouncementSupplyInfoRequest request) {
+    public LHAnnouncementSupplyInfoResponse getAnnouncementSupplyInfo(LHAnnouncementDetailAndSupplyRequest request) {
         return client.getAnnouncementSupplyInfo(request);
     }
 

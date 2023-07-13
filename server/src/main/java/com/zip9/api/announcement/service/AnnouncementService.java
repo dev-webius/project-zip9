@@ -1,20 +1,22 @@
 package com.zip9.api.announcement.service;
 
+import com.zip9.api.LH.dto.LHAnnouncementDetailAndSupplyRequest;
 import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
-import com.zip9.api.LH.dto.LHAnnouncementRequest;
 import com.zip9.api.LH.dto.LHAnnouncementResponse;
 import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
-import com.zip9.api.LH.enums.City;
+import com.zip9.api.LH.enums.HouseSupplyType;
 import com.zip9.api.LH.service.LHService;
 import com.zip9.api.announcement.dto.*;
 import com.zip9.api.naver.dto.GeocodingResponse;
 import com.zip9.api.naver.service.GeocodingService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,8 +30,7 @@ public class AnnouncementService {
      */
     public AnnouncementResponse searchAnnouncements(AnnouncementRequest request) {
         // LH 공고 리스트
-        List<LHAnnouncementRequest> lhAnnouncementRequests = request.buildLHRequests();
-        List<LHAnnouncementResponse> lhAnnouncements = lhAnnouncementRequests.stream()
+        List<LHAnnouncementResponse> lhAnnouncements = request.buildLHRequests().stream()
                 .map(lhRequest -> lhService.searchAnnouncements(lhRequest))
                 .flatMap(List::stream)
                 .toList()
@@ -37,18 +38,28 @@ public class AnnouncementService {
                 .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
                 .toList();
 
-        // LH 공고상세 & 공급정보
-        lhAnnouncements.forEach(lhAnnouncement -> {
-            lhAnnouncement.setDetail(lhService.getAnnouncementDetail(new AnnouncementDetailRequest(lhAnnouncement)));
-            lhAnnouncement.setSupplyInfo(lhService.getAnnouncementSupplyInfo(new AnnouncementSupplyInfoRequest(lhAnnouncement)));
-        });
+        // 공고 응답 데이터 생성 - 공고 내 단지별 위치정보 조회
+        List<Announcement> announcements = lhAnnouncements.stream()
+                .map(lhAnnouncement -> {
+                            // 공고 상세 조회
+                            LHAnnouncementDetailResponse lhAnnouncementDetail = lhService.getAnnouncementDetail(
+                                    LHAnnouncementDetailAndSupplyRequest.ByLHAnnouncementBuilder()
+                                            .lhAnnouncement(lhAnnouncement)
+                                            .build()
+                            );
+
+                            // 응답 데이터 생성
+                            return Announcement.ByLHAnnouncement()
+                                    .lhAnnouncement(lhAnnouncement)
+                                    .positions(buildPositionOfHouesComplex(lhAnnouncementDetail))
+                                    .build();
+                        }
+                )
+                .toList();
 
         // API Response 데이터 생성
         AnnouncementResponse response = new AnnouncementResponse();
 
-        List<Announcement> announcements = lhAnnouncements.stream()
-                .map(this::buildAnnouncementFrom)
-                .toList();
 
         for (Announcement announcement : announcements) {
             Map<String, Integer> numberOfAnnouncementsByCity = response.getMeta().getNumberOfAnnouncementsByCity();
@@ -66,68 +77,56 @@ public class AnnouncementService {
         return response;
     }
 
-    private Announcement buildAnnouncementFrom(LHAnnouncementResponse lhAnnouncement) {
-        List<AnnouncementDetailsResponse> details = buildAnnouncementDetailsFrom(lhAnnouncement.getDetail(), lhAnnouncement.getSupplyInfo(), lhAnnouncement.getSupplyTypeCode());
-        List<AnnouncementResponse.Position> positions = buildPositionOfHouseComplexes(details);
+    private List<AnnouncementResponse.Position> buildPositionOfHouesComplex(LHAnnouncementDetailResponse lhAnnouncementDetail) {
+        List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = lhAnnouncementDetail.getHouseComplex().getValues().stream()
+                .map(AnnouncementDetailsResponse.HouseComplex::buildFrom)
+                .toList();
 
-        Announcement announcement = Announcement.ByLHAnnouncement()
-                .lhAnnouncement(lhAnnouncement)
-                .positions(positions)
-                .details(details)
-                .build();
-
-
-        if (!ObjectUtils.isEmpty(City.nameOf(lhAnnouncement.getCityName()))) {
-            announcement.setCityShortName(City.nameOf(lhAnnouncement.getCityName()).shortName);
-        }
-
-        return announcement;
+        return houseComplexes.stream().map(this::buildPositionOfHouseComplex).toList();
     }
 
-    private List<AnnouncementResponse.Position> buildPositionOfHouseComplexes(List<AnnouncementDetailsResponse> details) {
-        List<AnnouncementResponse.Position> positions = new ArrayList<>();
+    private AnnouncementResponse.Position buildPositionOfHouseComplex(AnnouncementDetailsResponse.HouseComplex houseComplex) {
+        GeocodingResponse.Address address = new GeocodingResponse.Address();
 
-        for (AnnouncementDetailsResponse detail: details) {
-            Map<String, AnnouncementDetailsResponse.HouseComplex> mapOfHouseComplexes = detail.getHouseComplexes().getMap();
-
-            for (String key: mapOfHouseComplexes.keySet()) {
-                AnnouncementDetailsResponse.HouseComplex houseComplex = mapOfHouseComplexes.get(key);
-                GeocodingResponse.Address address = new GeocodingResponse.Address();
-
-                if (StringUtils.hasLength(houseComplex.getName())) {
-                    address = geocodingService.findAddress(houseComplex.getName());
-                }
-
-                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getDetailAddress())) {
-                    address = geocodingService.findAddress(houseComplex.getDetailAddress());
-                }
-
-                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress() + " " + houseComplex.getDetailAddress())) {
-                    address = geocodingService.findAddress(houseComplex.getAddress() + " " + houseComplex.getDetailAddress());
-                }
-
-                if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress())) {
-                    address = geocodingService.findAddress(houseComplex.getAddress());
-                }
-
-                if (address.hasPosition()) {
-                    positions.add(AnnouncementResponse.Position.builder()
-                            .houseComplexName(houseComplex.getNameOrDetailAddress())
-                            .address(address.getAddress())
-                            .x(address.getX())
-                            .y(address.getY())
-                            .build()
-                    );
-                }
-            }
+        if (StringUtils.hasLength(houseComplex.getName())) {
+            address = geocodingService.findAddress(houseComplex.getName());
         }
 
-        return positions;
+        if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getDetailAddress())) {
+            address = geocodingService.findAddress(houseComplex.getDetailAddress());
+        }
+
+        if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress() + " " + houseComplex.getDetailAddress())) {
+            address = geocodingService.findAddress(houseComplex.getAddress() + " " + houseComplex.getDetailAddress());
+        }
+
+        if (!address.hasPosition() && StringUtils.hasLength(houseComplex.getAddress())) {
+            address = geocodingService.findAddress(houseComplex.getAddress());
+        }
+
+        if (address.hasPosition()) {
+            return AnnouncementResponse.Position.builder()
+                    .houseComplexName(houseComplex.getNameOrDetailAddress())
+                    .address(address.getAddress())
+                    .x(address.getX())
+                    .y(address.getY())
+                    .build();
+        } else {
+            return new AnnouncementResponse.Position();
+        }
     }
 
-    private List<AnnouncementDetailsResponse> buildAnnouncementDetailsFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseSupplyTypeCode) {
-        List<AnnouncementDetailsResponse> details = new ArrayList<>();
+    /**
+     * 공고 상세정보 조회
+     */
+    public AnnouncementDetailsResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
+        LHAnnouncementDetailResponse detail = lhService.getAnnouncementDetail(LHAnnouncementDetailAndSupplyRequest.ByAnnouncementDetailRequestBuilder().request(request).build());
+        LHAnnouncementSupplyInfoResponse supplyInfo = lhService.getAnnouncementSupplyInfo(LHAnnouncementDetailAndSupplyRequest.ByAnnouncementDetailRequestBuilder().request(request).build());
 
+        return buildAnnouncementDetailsFrom(detail, supplyInfo, HouseSupplyType.valueOf(request.getSupplyType()).code);
+    }
+
+    private AnnouncementDetailsResponse buildAnnouncementDetailsFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseSupplyTypeCode) {
         List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = buildHouseComplexesFrom(lhDetail, lhSupplyInfo);
         List<AnnouncementDetailsResponse.SupplySchedule> supplySchedules = buildSupplySchedulesFrom(lhDetail, houseSupplyTypeCode);
 
@@ -140,19 +139,27 @@ public class AnnouncementService {
                 )
         );
 
-        details.add(AnnouncementDetailsResponse.builder()
-                        .supplySchedules(supplySchedules)
-                        .houseComplexes(AnnouncementDetailsResponse.HouseComplexes.builder()
-                                .names(houseComplexesMap.keySet().stream().toList())
-                                .map(houseComplexesMap)
-                                .build())
-                        .reception(buildReceptionFrom(lhDetail))
-                        .etc(buildEtcFrom(lhDetail))
+        return AnnouncementDetailsResponse.builder()
+                .supplySchedules(supplySchedules)
+                .houseComplexes(AnnouncementDetailsResponse.HouseComplexes.builder()
+                        .names(houseComplexesMap.keySet().stream().toList())
+                        .map(houseComplexesMap)
+                        .build())
+                .reception(buildReceptionFrom(lhDetail))
+                .attachments(buildAttachmentsFrom(lhDetail))
+                .etc(buildEtcFrom(lhDetail))
+                .build();
+    }
+
+    private List<AnnouncementDetailsResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse lhDetail) {
+        return lhDetail.getAttachment().getValues().stream()
+                .map(lhDetailAttachment -> AnnouncementDetailsResponse.Attachment.builder()
+                        .fileTypeName(lhDetailAttachment.getFileTypeName())
+                        .fileName(lhDetailAttachment.getFileName())
+                        .downloadUrl(lhDetailAttachment.getDownloadUrl())
                         .build()
-        );
-
-
-        return details;
+                )
+                .toList();
     }
 
     private List<AnnouncementDetailsResponse.SupplySchedule> buildSupplySchedulesFrom(LHAnnouncementDetailResponse lhDetail, String houseSupplyTypeCode) {

@@ -8,8 +8,6 @@ import com.zip9.api.LH.dto.*;
 import com.zip9.api.LH.enums.AnnouncementStatus;
 import com.zip9.api.LH.enums.AnnouncementType;
 import com.zip9.api.LH.enums.City;
-import com.zip9.api.announcement.dto.AnnouncementDetailRequest;
-import com.zip9.api.announcement.dto.AnnouncementSupplyInfoRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -63,7 +61,7 @@ public class LHApiClient implements Client {
     }
 
     @Override
-    public LHAnnouncementSupplyInfoResponse getAnnouncementSupplyInfo(AnnouncementSupplyInfoRequest request) {
+    public LHAnnouncementSupplyInfoResponse getAnnouncementSupplyInfo(LHAnnouncementDetailAndSupplyRequest request) {
         Flux<Object> flux = webClient
                 .get()
                 .uri(buildUriWithQueryParmas(request))
@@ -79,7 +77,7 @@ public class LHApiClient implements Client {
     }
 
     @Override
-    public LHAnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
+    public LHAnnouncementDetailResponse getAnnouncementDetail(LHAnnouncementDetailAndSupplyRequest request) {
         Flux<Object> flux = webClient
                 .get()
                 .uri(buildUriWithQueryParmas(request))
@@ -134,25 +132,9 @@ public class LHApiClient implements Client {
         return builder.build().toUriString();
     }
 
-    private String buildUriWithQueryParmas(AnnouncementDetailRequest request) {
+    private String buildUriWithQueryParmas(LHAnnouncementDetailAndSupplyRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder
                 .fromPath(PUBLIC_RENTAL_ANNOUNCEMENT_DETAIL_URI)
-                .queryParam("serviceKey", DECODED_SERVICE_KEY)
-                .queryParam("PAN_ID", request.getAnnouncementId())
-                .queryParam("UPP_AIS_TP_CD", request.getAnnouncementTypeCode())
-                .queryParam("SPL_INF_TP_CD", request.getSupplyTypeCode())
-                .queryParam("CCR_CNNT_SYS_DS_CD", request.getCrmCode());
-
-        if (!ObjectUtils.isEmpty(request.getAnnouncementTypeCode())) {
-            builder.queryParam("AIS_TP_CD", request.getAnnouncementDetailTypeCode());
-        }
-
-        return builder.build().toUriString();
-    }
-
-    private String buildUriWithQueryParmas(AnnouncementSupplyInfoRequest request) {
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromPath(PUBLIC_RENTAL_ANNOUNCEMENT_SUPPLY_URI)
                 .queryParam("serviceKey", DECODED_SERVICE_KEY)
                 .queryParam("PAN_ID", request.getAnnouncementId())
                 .queryParam("UPP_AIS_TP_CD", request.getAnnouncementTypeCode())

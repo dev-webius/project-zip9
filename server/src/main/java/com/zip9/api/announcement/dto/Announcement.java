@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Announcement {
-    @JsonIgnore
+    @Schema(description = "공고 ID")
     private String id;
     @Schema(description = "공고명")
     private String title;
@@ -41,23 +41,33 @@ public class Announcement {
     private LocalDate closeDate;
     @Schema(description = "단지별 위치정보")
     private List<AnnouncementResponse.Position> positions;
-    @Schema(description = "단지별 상세정보")
-    private List<AnnouncementDetailsResponse> details;
+    @JsonIgnore
+    @Schema(description = "공고유형코드")
+    private String announcementTypeCode;
+    @JsonIgnore
+    @Schema(description = "공고상세유형코드")
+    private String announcementDetailTypeCode;
+    @JsonIgnore
+    @Schema(description = "공급유형코드")
+    private String supplyTypeCode;
+    @JsonIgnore
+    @Schema(description = "고객센터유형코드")
+    private String csTypeCode;
 
     @Builder(builderClassName = "ByLHAnnouncement", builderMethodName = "ByLHAnnouncement")
-    public Announcement(LHAnnouncementResponse lhAnnouncement, List<AnnouncementResponse.Position> positions, List<AnnouncementDetailsResponse> details) {
+    public Announcement(LHAnnouncementResponse lhAnnouncement, List<AnnouncementResponse.Position> positions) {
         this.id = lhAnnouncement.getId();
         this.title = lhAnnouncement.getTitle();
         this.statusName = lhAnnouncement.getAnnouncementStatusName();
         this.announcementTypeName = lhAnnouncement.getAnnouncementTypeName();
         this.announcementDetailTypeName = lhAnnouncement.getAnnouncementDetailTypeName();
         this.cityName = lhAnnouncement.getCityName();
+        this.cityShortName = City.nameOf(lhAnnouncement.getCityName()).shortName;
         this.detailUrlMobile = lhAnnouncement.getDetailUrlMobile();
         this.detailUrl = lhAnnouncement.getDetailUrl();
         this.registDate = lhAnnouncement.getRegistDate();
         this.closeDate = lhAnnouncement.getCloseDate();
         this.positions = positions;
-        this.details = details;
     }
 
     public String getCityShortName() {

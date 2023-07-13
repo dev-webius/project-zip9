@@ -26,6 +26,8 @@ public class AnnouncementDetailsResponse {
     private HouseComplexes houseComplexes;
     @Schema(description = "접수처 정보")
     private Reception reception;
+    @Schema(description = "공고 첨부파일")
+    private List<Attachment> attachments;
     @Schema(description = "기타")
     private Etc etc;
 

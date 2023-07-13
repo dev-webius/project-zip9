@@ -2,7 +2,6 @@ package com.zip9.api.LH.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -68,17 +67,4 @@ public class LHAnnouncementResponse {
 
     @JsonProperty("ALL_CNT")
     private Long view;
-
-    @Builder.Default
-    private LHAnnouncementDetailResponse detail = new LHAnnouncementDetailResponse();
-    @Builder.Default
-    private LHAnnouncementSupplyInfoResponse supplyInfo = new LHAnnouncementSupplyInfoResponse();
-
-    public void setDetail(LHAnnouncementDetailResponse detail) {
-        this.detail = detail;
-    }
-
-    public void setSupplyInfo(LHAnnouncementSupplyInfoResponse supplyInfo) {
-        this.supplyInfo = supplyInfo;
-    }
 }

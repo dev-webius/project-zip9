@@ -41,13 +41,13 @@ public enum City {
         return Arrays.stream(values())
                 .filter(value -> value.code.equals(code))
                 .findAny()
-                .orElse(null);
+                .orElse(ETC);
     }
 
     static public City nameOf(String name) {
         return Arrays.stream(values())
                 .filter(value -> value.name.equals(name))
                 .findAny()
-                .orElse(null);
+                .orElse(ETC);
     }
 }
