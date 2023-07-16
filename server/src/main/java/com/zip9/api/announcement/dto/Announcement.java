@@ -1,18 +1,20 @@
 package com.zip9.api.announcement.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zip9.api.LH.dto.LHAnnouncementResponse;
+import com.zip9.api.LH.enums.AnnouncementDetailType;
+import com.zip9.api.LH.enums.AnnouncementType;
 import com.zip9.api.LH.enums.City;
+import com.zip9.api.LH.enums.HouseSupplyType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.util.List;
-@Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,21 +43,22 @@ public class Announcement {
     private LocalDate closeDate;
     @Schema(description = "단지별 위치정보")
     private List<AnnouncementResponse.Position> positions;
-    @JsonIgnore
-    @Schema(description = "공고유형코드")
-    private String announcementTypeCode;
-    @JsonIgnore
-    @Schema(description = "공고상세유형코드")
-    private String announcementDetailTypeCode;
-    @JsonIgnore
-    @Schema(description = "공급유형코드")
-    private String supplyTypeCode;
-    @JsonIgnore
+    @Schema(description = "공고유형")
+    private String announcementType;
+    @Schema(description = "공고상세유형")
+    private String announcementDetailType;
+    @Schema(description = "공급유형")
+    private String supplyType;
     @Schema(description = "고객센터유형코드")
     private String csTypeCode;
 
     @Builder(builderClassName = "ByLHAnnouncement", builderMethodName = "ByLHAnnouncement")
     public Announcement(LHAnnouncementResponse lhAnnouncement, List<AnnouncementResponse.Position> positions) {
+        Assert.notNull(City.nameOf(lhAnnouncement.getCityName()), "'city' is invalid.");
+        Assert.notNull(AnnouncementType.codeOf(lhAnnouncement.getAnnouncementTypeCode()), "'announcementType' is invalid.");
+        Assert.notNull(AnnouncementDetailType.codeOf(lhAnnouncement.getAnnouncementDetailTypeCode()), "'announcementDetailType' is invalid.");
+        Assert.notNull(HouseSupplyType.codeOf(lhAnnouncement.getSupplyTypeCode()), "'houseSupplyType' is invalid.");
+
         this.id = lhAnnouncement.getId();
         this.title = lhAnnouncement.getTitle();
         this.statusName = lhAnnouncement.getAnnouncementStatusName();
@@ -68,6 +71,11 @@ public class Announcement {
         this.registDate = lhAnnouncement.getRegistDate();
         this.closeDate = lhAnnouncement.getCloseDate();
         this.positions = positions;
+
+        this.announcementType = AnnouncementType.codeOf(lhAnnouncement.getAnnouncementTypeCode()).name();
+        this.announcementDetailType = AnnouncementDetailType.codeOf(lhAnnouncement.getAnnouncementDetailTypeCode()).name();
+        this.supplyType = HouseSupplyType.codeOf(lhAnnouncement.getSupplyTypeCode()).name();
+        this.csTypeCode = lhAnnouncement.getCrmCode();
     }
 
     public String getCityShortName() {

@@ -45,7 +45,7 @@ public class AnnouncementDetailRequest {
         Assert.notNull(request.getAnnouncementType(), "'announcementType' cannot be null.");
         Assert.notNull(request.getAnnouncementDetailType(), "'announcementDetailType' cannot be null.");
         Assert.notNull(request.getSupplyType(), "'supplyType' cannot be null.");
-        Assert.notNull(request.getCsTypeCode(), "'crmCode' cannot be null.");
+        Assert.notNull(request.getCsTypeCode(), "'csTypeCode' cannot be null.");
         Assert.notNull(AnnouncementType.valueOf(request.getAnnouncementType()), "'announcementType' is invalid.");
         Assert.notNull(AnnouncementDetailType.valueOf(request.getAnnouncementDetailType()), "'announcementDetailType' is invalid.");
         Assert.notNull(HouseSupplyType.valueOf(request.getSupplyType()), "'supplyType' is invalid.");

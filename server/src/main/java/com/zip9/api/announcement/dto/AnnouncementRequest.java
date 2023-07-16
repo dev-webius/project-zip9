@@ -51,22 +51,19 @@ public class AnnouncementRequest {
     @Parameter(description = "공고유형 (미입력 시 전체)", in = ParameterIn.QUERY)
     @ArraySchema(schema = @Schema(implementation = AnnouncementType.class,
             description ="RENT : 임대주택, WELFARE : 주거복지(매입임대), NEWLYWEDS : 신혼희망타운"))
-    @Builder.Default
-    private List<String> announcementTypes = new ArrayList<>();
+    private List<String> announcementTypes;
 
     @EnumConstraints(enumClass = AnnouncementStatus.class, ignoreCase = true, nullable = true)
     @Parameter(description = "공고상태 (미입력 시 전체)")
     @ArraySchema(schema = @Schema(implementation = AnnouncementStatus.class,
             description ="ANNOUNCED : 공고중, ACCEPTABLE : 접수중, ANNOUNCED_CORRECTLY : 정정공고중"))
 
-    @Builder.Default
-    private List<String> announcementStatus = new ArrayList<>();
+    private List<String> announcementStatus;
 
 //    @Min(value = 1)
 //    @Parameter(description = "페이지", in = ParameterIn.QUERY, example = "1")
 //    private Integer page;
 
-//    @Builder.Default
 //    @JsonIgnore
 //    private Integer size = 10000;
 
