@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity, Long> {
+public interface AnnouncementRepository extends JpaRepository<AnnouncementEntity, Long>, AnnouncementCustomRepository {
     List<AnnouncementEntity> findAllByStatusCodeIn(List<String> statusCodes);
 }

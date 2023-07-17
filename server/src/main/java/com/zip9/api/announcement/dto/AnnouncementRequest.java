@@ -114,4 +114,17 @@ public class AnnouncementRequest {
 
         return requests;
     }
+
+    public String getCityCode() {
+        return City.valueOf(city).code;
+    }
+
+    public List<String> getAnnounceTypesCodes() {
+        return announcementTypes.stream().map(type -> AnnouncementType.valueOf(type).code).toList();
+    }
+
+    public List<String> getAnnounceStatusCodes() {
+        return announcementStatus.stream().map(status -> AnnouncementStatus.valueOf(status).name()).toList();
+
+    }
 }

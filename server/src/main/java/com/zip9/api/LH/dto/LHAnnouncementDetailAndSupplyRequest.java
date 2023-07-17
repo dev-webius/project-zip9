@@ -27,7 +27,7 @@ public class LHAnnouncementDetailAndSupplyRequest {
 
     @Builder(builderMethodName = "ByAnnouncementDetailRequestBuilder", builderClassName = "ByAnnouncementDetailRequestBuilder")
     public LHAnnouncementDetailAndSupplyRequest(AnnouncementDetailRequest request) {
-        this.announcementId = request.getAnnouncementId();
+        this.announcementId = request.getThirdPartyAnnouncementId();
         this.announcementTypeCode = AnnouncementType.valueOf(request.getAnnouncementType()).code;
         this.announcementDetailTypeCode = AnnouncementDetailType.valueOf(request.getAnnouncementDetailType()).code;
         this.supplyTypeCode = HouseSupplyType.valueOf(request.getSupplyType()).code;

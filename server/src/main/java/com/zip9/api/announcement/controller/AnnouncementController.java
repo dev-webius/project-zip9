@@ -4,7 +4,7 @@ import com.zip9.api.announcement.dto.AnnouncementDetailRequest;
 import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
 import com.zip9.api.announcement.dto.AnnouncementRequest;
 import com.zip9.api.announcement.dto.AnnouncementResponse;
-import com.zip9.api.announcement.service.AnnouncementService;
+import com.zip9.api.announcement.service.AnnouncementOpenAPIService;
 import com.zip9.api.common.dto.ErrorResponse;
 import com.zip9.api.common.dto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/announcements")
 @RequiredArgsConstructor
 public class AnnouncementController {
-    private final AnnouncementService announcementService;
+    private final AnnouncementOpenAPIService announcementOpenAPIService;
 
     @Operation(summary = "공고 리스트 조회", description = "공고 리스트 조회")
     @ApiResponses(value = {
@@ -35,7 +35,7 @@ public class AnnouncementController {
     })
     @GetMapping
     public SuccessResponse<AnnouncementResponse> searchAnnouncements(@ParameterObject @Valid AnnouncementRequest announcementRequest) {
-        return SuccessResponse.of(announcementService.searchAnnouncements(announcementRequest));
+        return SuccessResponse.of(announcementOpenAPIService.getAnnouncements(announcementRequest));
     }
 
     @Operation(summary = "공고 상세정보 조회", description = "공고 상세정보 조회")
@@ -47,7 +47,7 @@ public class AnnouncementController {
     })
     @GetMapping("/{announcementId}")
     public SuccessResponse<AnnouncementDetailResponse> getAnnouncementDetail(@ParameterObject @Valid AnnouncementDetailRequest request) {
-        return SuccessResponse.of(announcementService.getAnnouncementDetail(request));
+        return SuccessResponse.of(announcementOpenAPIService.getAnnouncementDetail(request));
     }
 }
 

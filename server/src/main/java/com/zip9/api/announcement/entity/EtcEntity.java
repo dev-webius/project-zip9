@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.annotations.Comment;
 
 @Table(name = "TB_ETC", indexes = {
@@ -75,8 +74,8 @@ public class EtcEntity extends BaseTimeEntity {
         this.leaseTerms = etc.getLeaseTerms();
         this.leaseCondition = etc.getLeaseCondition();
         this.caution = etc.getCaution();
-        this.supportLimitAmount = NumberUtils.toInt(etc.getSupportLimitAmount(), 0);
-        this.numberOfSupplyHousehold = NumberUtils.toInt(etc.getNumberOfSupplyHousehold(), 0);
+        this.supportLimitAmount = etc.getSupportLimitAmount();
+        this.numberOfSupplyHousehold = etc.getNumberOfSupplyHousehold();
         this.receptionAddress = etc.getReceptionAddress();
         this.groupHomeAgency = etc.getGroupHomeAgency();
         this.announcement = announcement;

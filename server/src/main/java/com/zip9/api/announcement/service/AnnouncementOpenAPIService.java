@@ -7,13 +7,11 @@ import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
 import com.zip9.api.LH.enums.HouseSupplyType;
 import com.zip9.api.LH.service.LHService;
 import com.zip9.api.announcement.dto.*;
-import com.zip9.api.announcement.entity.*;
-import com.zip9.api.announcement.repository.*;
 import com.zip9.api.naver.dto.GeocodingResponse;
 import com.zip9.api.naver.service.GeocodingService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -24,21 +22,16 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class AnnouncementService {
+public class AnnouncementOpenAPIService implements AnnouncementReadService {
     private LHService lhService;
     private GeocodingService geocodingService;
 
-    private AnnouncementRepository announcementRepository;
-    private HouseComplexRepository houseComplexRepository;
-    private HouseComplexAttachmentRepository houseComplexAttachmentRepository;
-    private SupplyScheduleRepository supplyScheduleRepository;
-    private ReceptionRepository receptionRepository;
-    private EtcRepository etcRepository;
 
     /**
      * 공고 목록 조회
      */
-    public AnnouncementResponse searchAnnouncements(AnnouncementRequest request) {
+    @Override
+    public AnnouncementResponse getAnnouncements(AnnouncementRequest request) {
         // LH 공고 리스트
         List<LHAnnouncementResponse> lhAnnouncements = request.buildLHRequests().stream()
                 .map(lhRequest -> lhService.searchAnnouncements(lhRequest))
@@ -129,6 +122,7 @@ public class AnnouncementService {
     /**
      * 공고 상세정보 조회
      */
+    @Override
     public AnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
         LHAnnouncementDetailResponse detail = lhService.getAnnouncementDetail(LHAnnouncementDetailAndSupplyRequest.ByAnnouncementDetailRequestBuilder().request(request).build());
         LHAnnouncementSupplyInfoResponse supplyInfo = lhService.getAnnouncementSupplyInfo(LHAnnouncementDetailAndSupplyRequest.ByAnnouncementDetailRequestBuilder().request(request).build());
@@ -226,8 +220,8 @@ public class AnnouncementService {
                 .leaseTerms(lhEtcValue.getLeaseTerms())
                 .leaseCondition(lhEtcValue.getLeaseCondition())
                 .caution(lhEtcValue.getCaution())
-                .supportLimitAmount(lhEtcValue.getSupportLimitAmount())
-                .numberOfSupplyHousehold(lhEtcValue.getNumberOfSupplyHousehold())
+                .supportLimitAmount(NumberUtils.toInt(lhEtcValue.getSupportLimitAmount(), 0))
+                .numberOfSupplyHousehold(NumberUtils.toInt(lhEtcValue.getNumberOfSupplyHousehold(), 0))
                 .receptionAddress(lhEtcValue.getReceptionAddress())
                 .build();
     }
@@ -291,53 +285,5 @@ public class AnnouncementService {
         } else {
             return "";
         }
-    }
-
-    /**
-     * 공고 저장
-     */
-    @Transactional(readOnly = false)
-    public AnnouncementEntity save(AnnouncementEntity entity) {
-        return announcementRepository.save(entity);
-    }
-
-    /**
-     * 공고 상세 - 주택단지 저장
-     */
-    @Transactional(readOnly = false)
-    public HouseComplexEntity save(HouseComplexEntity entity) {
-        return houseComplexRepository.save(entity);
-    }
-
-    /**
-     * 공고 상세 - 주택단지별 첨부파일 저장
-     */
-    @Transactional(readOnly = false)
-    public HouseComplexAttachmentEntity save(HouseComplexAttachmentEntity entity) {
-        return houseComplexAttachmentRepository.save(entity);
-    }
-
-    /**
-     * 공고 상세 - 공급일정 저장
-     */
-    @Transactional(readOnly = false)
-    public SupplyScheduleEntity save(SupplyScheduleEntity entity) {
-        return supplyScheduleRepository.save(entity);
-    }
-
-    /**
-     * 공고 상세 - 접수처 저장
-     */
-    @Transactional(readOnly = false)
-    public ReceptionEntity save(ReceptionEntity entity) {
-        return receptionRepository.save(entity);
-    }
-
-    /**
-     * 공고 상세 - 기타 저장
-     */
-    @Transactional(readOnly = false)
-    public EtcEntity save(EtcEntity entity) {
-        return etcRepository.save(entity);
     }
 }

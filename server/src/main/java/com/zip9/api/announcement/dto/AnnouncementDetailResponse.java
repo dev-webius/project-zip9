@@ -3,6 +3,10 @@ package com.zip9.api.announcement.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
 import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
+import com.zip9.api.announcement.entity.EtcEntity;
+import com.zip9.api.announcement.entity.HouseComplexEntity;
+import com.zip9.api.announcement.entity.ReceptionEntity;
+import com.zip9.api.announcement.entity.SupplyScheduleEntity;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -113,6 +117,23 @@ public class AnnouncementDetailResponse {
                     .convenientFacilities(lhDetailHouseComplexValue.getConvenientFacilities())
                     .appurtenantFacilities(lhDetailHouseComplexValue.getAppurtenantFacilities())
                     .supplyInfoGuide(lhDetailHouseComplexValue.getSupplyInfoGuide())
+                    .build();
+        }
+
+        public static HouseComplex buildFrom(HouseComplexEntity houseComplexEntity) {
+            return HouseComplex.builder()
+                    .name(houseComplexEntity.getName())
+                    .address(houseComplexEntity.getAddress())
+                    .detailAddress(houseComplexEntity.getDetailAddress())
+                    .netLeasableAreaRange(houseComplexEntity.getNetLeasableAreaRange())
+                    .totalOfHousehold(houseComplexEntity.getTotalOfHousehold())
+                    .heatingTypeName(houseComplexEntity.getHeatingTypeName())
+                    .expectedMoveInDate(houseComplexEntity.getExpectedMoveInDate())
+                    .trafficFacilities(houseComplexEntity.getTrafficFacilities())
+                    .educationFacilities(houseComplexEntity.getEducationFacilities())
+                    .convenientFacilities(houseComplexEntity.getConvenientFacilities())
+                    .appurtenantFacilities(houseComplexEntity.getAppurtenantFacilities())
+                    .supplyInfoGuide(houseComplexEntity.getSupplyInfoGuide())
                     .build();
         }
 
@@ -233,6 +254,21 @@ public class AnnouncementDetailResponse {
         @Builder.Default
         @Schema(description = "공급일정 안내사항")
         private String supplyScheduleGuide = "";
+
+        public static SupplySchedule buildFrom(SupplyScheduleEntity supplyScheduleEntity) {
+            return SupplySchedule.builder()
+                    .target(supplyScheduleEntity.getTarget())
+                    .applicationDatetime(supplyScheduleEntity.getApplicationDatetime())
+                    .applicationMethod(supplyScheduleEntity.getApplicationMethod())
+                    .winnerAnnouncementDate(supplyScheduleEntity.getWinnerAnnouncementDate())
+                    .paperSubmitOpenAnnouncementDate(supplyScheduleEntity.getPaperSubmitOpenAnnouncementDate())
+                    .paperSubmitTerm(supplyScheduleEntity.getPaperSubmitTerm())
+                    .contractTerm(supplyScheduleEntity.getContractTerm())
+                    .applicationTerm(supplyScheduleEntity.getApplicationTerm())
+                    .houseBrowseTerm(supplyScheduleEntity.getHouseBrowseTerm())
+                    .supplyScheduleGuide(supplyScheduleEntity.getSupplyScheduleGuide())
+                    .build();
+        }
     }
 
     @Getter
@@ -255,6 +291,16 @@ public class AnnouncementDetailResponse {
         @Builder.Default
         @Schema(description = "안내사항")
         private String receptionGuide = "";
+
+        public static Reception buildFrom(ReceptionEntity receptionEntity) {
+            return Reception.builder()
+                    .address(receptionEntity.getAddress())
+                    .telephoneNumber(receptionEntity.getTelephoneNumber())
+                    .operationTerm(receptionEntity.getOperationTerm())
+                    .scheduleGuide(receptionEntity.getScheduleGuide())
+                    .receptionGuide(receptionEntity.getReceptionGuide())
+                    .build();
+        }
     }
 
     @Getter
@@ -288,15 +334,32 @@ public class AnnouncementDetailResponse {
         private String caution = "";
         @Builder.Default
         @Schema(description = "지원한도액")
-        private String supportLimitAmount = "";
+        private Integer supportLimitAmount = 0;
         @Builder.Default
         @Schema(description = "공급호수")
-        private String numberOfSupplyHousehold = "";
+        private Integer numberOfSupplyHousehold = 0;
         @Builder.Default
         @Schema(description = "주택열람 기간")
         private String receptionAddress = "";
         @Builder.Default
         @Schema(description = "공동생활가정 운영기관")
         private String groupHomeAgency = "";
+
+        public static Etc buildFrom(EtcEntity etcEntity) {
+            return Etc.builder()
+                    .comment(etcEntity.getComment())
+                    .announcementDescription(etcEntity.getAnnouncementDescription())
+                    .correctOrCancelReason(etcEntity.getCorrectOrCancelReason())
+                    .targetArea(etcEntity.getTargetArea())
+                    .targetHouse(etcEntity.getTargetHouse())
+                    .leaseTerms(etcEntity.getLeaseTerms())
+                    .leaseCondition(etcEntity.getLeaseCondition())
+                    .caution(etcEntity.getCaution())
+                    .supportLimitAmount(etcEntity.getSupportLimitAmount())
+                    .numberOfSupplyHousehold(etcEntity.getNumberOfSupplyHousehold())
+                    .receptionAddress(etcEntity.getReceptionAddress())
+                    .groupHomeAgency(etcEntity.getGroupHomeAgency())
+                    .build();
+        }
     }
 }

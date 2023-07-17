@@ -18,24 +18,24 @@ import org.springframework.util.Assert;
 @NoArgsConstructor
 public class AnnouncementDetailRequest {
     @NotNull
-    @Parameter(description = "공고 ID", in = ParameterIn.PATH, example = "2015122300014121")
-    private String announcementId;
-    @NotNull
+    @Parameter(description = "공고 ID", in = ParameterIn.PATH)
+    private Long announcementId;
+
+    @Parameter(description = "타사 공고 ID", in = ParameterIn.QUERY, example = "2015122300014121")
+    private String thirdPartyAnnouncementId;
+
     @EnumConstraints(enumClass = AnnouncementType.class, ignoreCase = true, nullable = false)
     @Parameter(description = "공고유형", in = ParameterIn.QUERY)
     @Schema(implementation = AnnouncementType.class)
     private String announcementType;
-    @NotNull
     @EnumConstraints(enumClass = AnnouncementDetailType.class, ignoreCase = true, nullable = false)
     @Parameter(description = "공고상세유형", in = ParameterIn.QUERY)
     @Schema(implementation = AnnouncementDetailType.class)
     private String announcementDetailType;
-    @NotNull
     @EnumConstraints(enumClass = HouseSupplyType.class, ignoreCase = true, nullable = false)
     @Parameter(description = "공급유형", in = ParameterIn.QUERY)
     @Schema(implementation = HouseSupplyType.class)
     private String supplyType;
-    @NotNull
     @Parameter(description = "고객센터유형코드", in = ParameterIn.QUERY, example = "03")
     private String csTypeCode;
 

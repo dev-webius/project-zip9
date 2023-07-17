@@ -7,7 +7,8 @@ import com.zip9.api.LH.repository.RawDataRepository;
 import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
 import com.zip9.api.announcement.dto.AnnouncementRequest;
 import com.zip9.api.announcement.entity.*;
-import com.zip9.api.announcement.service.AnnouncementService;
+import com.zip9.api.announcement.service.AnnouncementDBService;
+import com.zip9.api.announcement.service.AnnouncementOpenAPIService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class ScheduleService {
     private final LHService lhService;
-    private final AnnouncementService announcementService;
+    private final AnnouncementDBService announcementDBService;
+    private final AnnouncementOpenAPIService announcementOpenAPIService;
     private final RawDataRepository rawDataRepository;
 
 
@@ -64,28 +66,28 @@ public class ScheduleService {
             LHAnnouncementDetailResponse lhAnnouncementDetail = LHAnnouncementDetailResponse.jsonToObject(rawData.getAnnouncementDetail());
             LHAnnouncementSupplyInfoResponse lhAnnouncementSupplyInfo = LHAnnouncementSupplyInfoResponse.jsonToObject(rawData.getAnnouncementSupply());
 
-            AnnouncementDetailResponse announcementDetail = announcementService.buildAnnouncementDetailsFrom(lhAnnouncementDetail, lhAnnouncementSupplyInfo, lhAnnouncement.getSupplyTypeCode());
+            AnnouncementDetailResponse announcementDetail = announcementOpenAPIService.buildAnnouncementDetailsFrom(lhAnnouncementDetail, lhAnnouncementSupplyInfo, lhAnnouncement.getSupplyTypeCode());
 
             // 공고 저장
-            AnnouncementEntity announcementEntity = announcementService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
+            AnnouncementEntity announcementEntity = announcementDBService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
                     .lhAnnouncement(lhAnnouncement)
                     .build());
 
             // 접수처 저장
-            announcementService.save(ReceptionEntity.ByAnnouncementDetailReceptionBuilder()
+            announcementDBService.save(ReceptionEntity.ByAnnouncementDetailReceptionBuilder()
                     .reception(announcementDetail.getReception())
                     .announcement(announcementEntity)
                     .build());
 
             // 기타 저장
-            announcementService.save(EtcEntity.ByAnnouncementDetailEtcBuilder()
+            announcementDBService.save(EtcEntity.ByAnnouncementDetailEtcBuilder()
                     .etc(announcementDetail.getEtc())
                     .announcement(announcementEntity)
                     .build());
 
             // 공급일정 저장
             for (AnnouncementDetailResponse.SupplySchedule supplySchedule : announcementDetail.getSupplySchedules()) {
-                announcementService.save(SupplyScheduleEntity.ByAnnouncementDetailSupplyScheduleBuilder()
+                announcementDBService.save(SupplyScheduleEntity.ByAnnouncementDetailSupplyScheduleBuilder()
                         .supplySchedule(supplySchedule)
                         .announcement(announcementEntity)
                         .build());
@@ -97,14 +99,14 @@ public class ScheduleService {
             for (String key : map.keySet()) {
                 AnnouncementDetailResponse.HouseComplex houseComplex = map.get(key);
 
-                HouseComplexEntity houseComplexEntity = announcementService.save(HouseComplexEntity.ByAnnouncementDetailHouseComplexBuilder()
+                HouseComplexEntity houseComplexEntity = announcementDBService.save(HouseComplexEntity.ByAnnouncementDetailHouseComplexBuilder()
                         .houseComplex(houseComplex)
                         .announcement(announcementEntity)
                         .build());
 
                 // 주택 단지별 첨부파일 저장
                 for (AnnouncementDetailResponse.Attachment attachment : houseComplex.getAttachments()) {
-                    announcementService.save(HouseComplexAttachmentEntity.ByAnnouncementDetailAttachmentBuilder()
+                    announcementDBService.save(HouseComplexAttachmentEntity.ByAnnouncementDetailAttachmentBuilder()
                             .attachment(attachment)
                             .houseComplex(houseComplexEntity)
                             .build());
@@ -164,7 +166,7 @@ public class ScheduleService {
     }
 
     private AnnouncementEntity save(LHAnnouncementResponse lhAnnouncement) {
-        return announcementService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
+        return announcementDBService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
                 .lhAnnouncement(lhAnnouncement)
                 .build()
         );
