@@ -36,9 +36,9 @@ class AnnouncementDBServiceTest {
     void getAnnouncementDetail_테스트() {
         Long announcementId = 277L;
 
-        AnnouncementDetailResponse announcementDetail = announcementDBService.getAnnouncementDetail(AnnouncementDetailRequest.builder()
+        announcementDBService.getAnnouncementDetail(AnnouncementDetailRequest.builder()
                 .announcementId(announcementId)
-                .build());
+                .build())
 
         assertTrue(true);
     }
