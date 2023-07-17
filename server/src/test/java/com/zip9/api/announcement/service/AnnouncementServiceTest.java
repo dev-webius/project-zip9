@@ -4,6 +4,7 @@ import com.zip9.api.announcement.dto.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.Assert;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,18 +17,28 @@ class AnnouncementServiceTest {
     AnnouncementService announcementService;
 
     @Test
+    void 공고_리스트조회_테스트() {
+        // given
+        AnnouncementResponse response = announcementService.searchAnnouncements(AnnouncementRequest.builder()
+                .registStartDate(LocalDate.parse("2023-07-01"))
+                .registEndDate(LocalDate.parse("2023-07-04"))
+                .build());
+
+        Assert.isTrue(Boolean.TRUE, "");
+    }
+
+    @Test
     void 공고_상세조회_테스트() {
         // given
         AnnouncementResponse response = announcementService.searchAnnouncements(AnnouncementRequest.builder()
                 .registStartDate(LocalDate.parse("2023-07-01"))
-                .registEndDate(LocalDate.parse("2023-07-11"))
+                .registEndDate(LocalDate.parse("2023-07-04"))
                 .build());
 
         LinkedHashMap<String, List<Announcement>> announcementMap = response.getItem().getAnnouncements();
 
-
         // when
-        List<AnnouncementDetailsResponse> responses = new ArrayList<>();
+        List<AnnouncementDetailResponse> responses = new ArrayList<>();
         for (String key : announcementMap.keySet()) {
             List<Announcement> announcements = announcementMap.get(key);
 

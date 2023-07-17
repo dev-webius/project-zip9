@@ -7,10 +7,13 @@ import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
 import com.zip9.api.LH.enums.HouseSupplyType;
 import com.zip9.api.LH.service.LHService;
 import com.zip9.api.announcement.dto.*;
+import com.zip9.api.announcement.entity.*;
+import com.zip9.api.announcement.repository.*;
 import com.zip9.api.naver.dto.GeocodingResponse;
 import com.zip9.api.naver.service.GeocodingService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -24,6 +27,13 @@ import java.util.stream.Collectors;
 public class AnnouncementService {
     private LHService lhService;
     private GeocodingService geocodingService;
+
+    private AnnouncementRepository announcementRepository;
+    private HouseComplexRepository houseComplexRepository;
+    private HouseComplexAttachmentRepository houseComplexAttachmentRepository;
+    private SupplyScheduleRepository supplyScheduleRepository;
+    private ReceptionRepository receptionRepository;
+    private EtcRepository etcRepository;
 
     /**
      * 공고 목록 조회
@@ -77,15 +87,15 @@ public class AnnouncementService {
         return response;
     }
 
-    private List<AnnouncementResponse.Position> buildPositionOfHouesComplex(LHAnnouncementDetailResponse lhAnnouncementDetail) {
-        List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = lhAnnouncementDetail.getHouseComplex().getValues().stream()
-                .map(AnnouncementDetailsResponse.HouseComplex::buildFrom)
+    public List<AnnouncementResponse.Position> buildPositionOfHouesComplex(LHAnnouncementDetailResponse lhAnnouncementDetail) {
+        List<AnnouncementDetailResponse.HouseComplex> houseComplexes = lhAnnouncementDetail.getHouseComplex().getValues().stream()
+                .map(AnnouncementDetailResponse.HouseComplex::buildFrom)
                 .toList();
 
         return houseComplexes.stream().map(this::buildPositionOfHouseComplex).toList();
     }
 
-    private AnnouncementResponse.Position buildPositionOfHouseComplex(AnnouncementDetailsResponse.HouseComplex houseComplex) {
+    private AnnouncementResponse.Position buildPositionOfHouseComplex(AnnouncementDetailResponse.HouseComplex houseComplex) {
         GeocodingResponse.Address address = new GeocodingResponse.Address();
 
         if (StringUtils.hasLength(houseComplex.getName())) {
@@ -119,29 +129,29 @@ public class AnnouncementService {
     /**
      * 공고 상세정보 조회
      */
-    public AnnouncementDetailsResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
+    public AnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
         LHAnnouncementDetailResponse detail = lhService.getAnnouncementDetail(LHAnnouncementDetailAndSupplyRequest.ByAnnouncementDetailRequestBuilder().request(request).build());
         LHAnnouncementSupplyInfoResponse supplyInfo = lhService.getAnnouncementSupplyInfo(LHAnnouncementDetailAndSupplyRequest.ByAnnouncementDetailRequestBuilder().request(request).build());
 
         return buildAnnouncementDetailsFrom(detail, supplyInfo, HouseSupplyType.valueOf(request.getSupplyType()).code);
     }
 
-    private AnnouncementDetailsResponse buildAnnouncementDetailsFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseSupplyTypeCode) {
-        List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = buildHouseComplexesFrom(lhDetail, lhSupplyInfo);
-        List<AnnouncementDetailsResponse.SupplySchedule> supplySchedules = buildSupplySchedulesFrom(lhDetail, houseSupplyTypeCode);
+    public AnnouncementDetailResponse buildAnnouncementDetailsFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseSupplyTypeCode) {
+        List<AnnouncementDetailResponse.HouseComplex> houseComplexes = buildHouseComplexesFrom(lhDetail, lhSupplyInfo);
+        List<AnnouncementDetailResponse.SupplySchedule> supplySchedules = buildSupplySchedulesFrom(lhDetail, houseSupplyTypeCode);
 
         // 데이터 보정
-        Map<String, AnnouncementDetailsResponse.HouseComplex> houseComplexesMap = houseComplexes.stream()
+        Map<String, AnnouncementDetailResponse.HouseComplex> houseComplexesMap = houseComplexes.stream()
                 .collect(
                         Collectors.toMap(
-                                AnnouncementDetailsResponse.HouseComplex::getNameOrDetailAddress,
+                                AnnouncementDetailResponse.HouseComplex::getNameOrDetailAddress,
                                 houseComplex -> houseComplex
-                )
-        );
+                        )
+                );
 
-        return AnnouncementDetailsResponse.builder()
+        return AnnouncementDetailResponse.builder()
                 .supplySchedules(supplySchedules)
-                .houseComplexes(AnnouncementDetailsResponse.HouseComplexes.builder()
+                .houseComplexes(AnnouncementDetailResponse.HouseComplexes.builder()
                         .names(houseComplexesMap.keySet().stream().toList())
                         .map(houseComplexesMap)
                         .build())
@@ -151,9 +161,9 @@ public class AnnouncementService {
                 .build();
     }
 
-    private List<AnnouncementDetailsResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse lhDetail) {
+    private List<AnnouncementDetailResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse lhDetail) {
         return lhDetail.getAttachment().getValues().stream()
-                .map(lhDetailAttachment -> AnnouncementDetailsResponse.Attachment.builder()
+                .map(lhDetailAttachment -> AnnouncementDetailResponse.Attachment.builder()
                         .fileTypeName(lhDetailAttachment.getFileTypeName())
                         .fileName(lhDetailAttachment.getFileName())
                         .downloadUrl(lhDetailAttachment.getDownloadUrl())
@@ -162,12 +172,12 @@ public class AnnouncementService {
                 .toList();
     }
 
-    private List<AnnouncementDetailsResponse.SupplySchedule> buildSupplySchedulesFrom(LHAnnouncementDetailResponse lhDetail, String houseSupplyTypeCode) {
-        List<AnnouncementDetailsResponse.SupplySchedule> supplySchedules = new ArrayList<>();
+    private List<AnnouncementDetailResponse.SupplySchedule> buildSupplySchedulesFrom(LHAnnouncementDetailResponse lhDetail, String houseSupplyTypeCode) {
+        List<AnnouncementDetailResponse.SupplySchedule> supplySchedules = new ArrayList<>();
 
         LHAnnouncementDetailResponse.SupplySchedule.Label lhDetailSupplyScheduleLabel = lhDetail.getSupplySchedule().getLabel();
 
-        for(LHAnnouncementDetailResponse.SupplySchedule.Value lhDetailSupplyScheduleValue : lhDetail.getSupplySchedule().getValues()) {
+        for (LHAnnouncementDetailResponse.SupplySchedule.Value lhDetailSupplyScheduleValue : lhDetail.getSupplySchedule().getValues()) {
             String houseComplexName = "";
             if (StringUtils.hasLength(lhDetailSupplyScheduleValue.getHouseComplexName())) {
                 houseComplexName = lhDetailSupplyScheduleValue.getHouseComplexName();
@@ -179,7 +189,7 @@ public class AnnouncementService {
                         .orElse("");
             }
 
-            supplySchedules.add(AnnouncementDetailsResponse.SupplySchedule.builder()
+            supplySchedules.add(AnnouncementDetailResponse.SupplySchedule.builder()
                     .target(LHAnnouncementDetailResponse.SupplySchedule.existTargetOf(houseSupplyTypeCode)
                             ? lhDetailSupplyScheduleValue.getTarget()
                             : houseComplexName
@@ -200,13 +210,13 @@ public class AnnouncementService {
         return supplySchedules;
     }
 
-    private AnnouncementDetailsResponse.Etc buildEtcFrom(LHAnnouncementDetailResponse lhDetail) {
+    private AnnouncementDetailResponse.Etc buildEtcFrom(LHAnnouncementDetailResponse lhDetail) {
         LHAnnouncementDetailResponse.Etc etc = lhDetail.getEtcInfo();
         LHAnnouncementDetailResponse.Etc.Value lhEtcValue = etc.getValues().stream()
                 .findFirst()
                 .orElse(new LHAnnouncementDetailResponse.Etc.Value());
 
-        return AnnouncementDetailsResponse.Etc.builder()
+        return AnnouncementDetailResponse.Etc.builder()
                 .announcementDescription(lhEtcValue.getAnnouncementDescription())
                 .comment(lhEtcValue.getComment())
                 .groupHomeAgency(lhEtcValue.getGroupHomeAgency())
@@ -222,13 +232,13 @@ public class AnnouncementService {
                 .build();
     }
 
-    private AnnouncementDetailsResponse.Reception buildReceptionFrom(LHAnnouncementDetailResponse lhDetail) {
+    private AnnouncementDetailResponse.Reception buildReceptionFrom(LHAnnouncementDetailResponse lhDetail) {
         LHAnnouncementDetailResponse.Reception reception = lhDetail.getReception();
         LHAnnouncementDetailResponse.Reception.Value receptionValue = reception.getValues().stream()
                 .findFirst()
                 .orElse(new LHAnnouncementDetailResponse.Reception.Value());
 
-        return AnnouncementDetailsResponse.Reception.builder()
+        return AnnouncementDetailResponse.Reception.builder()
                 .address(receptionValue.getAddress())
                 .telephoneNumber(receptionValue.getTelephoneNumber())
                 .operationTerm(makeTermValueFrom(receptionValue.getOpenDate(), receptionValue.getCloseDate()))
@@ -237,14 +247,14 @@ public class AnnouncementService {
                 .build();
     }
 
-    private List<AnnouncementDetailsResponse.HouseComplex> buildHouseComplexesFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo) {
-        List<AnnouncementDetailsResponse.HouseComplex> houseComplexes = new ArrayList<>();
+    private List<AnnouncementDetailResponse.HouseComplex> buildHouseComplexesFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo) {
+        List<AnnouncementDetailResponse.HouseComplex> houseComplexes = new ArrayList<>();
 
         for (LHAnnouncementDetailResponse.HouseComplex.Value lhDetailHouseComplexValue : lhDetail.getHouseComplex().getValues()) {
-            AnnouncementDetailsResponse.HouseComplex houseComplex = AnnouncementDetailsResponse.HouseComplex.buildFrom(lhDetailHouseComplexValue);
+            AnnouncementDetailResponse.HouseComplex houseComplex = AnnouncementDetailResponse.HouseComplex.buildFrom(lhDetailHouseComplexValue);
 
-            List<AnnouncementDetailsResponse.HouseType> houseTypes = buildHouseTypesFrom(lhSupplyInfo, lhDetailHouseComplexValue.getHouseComplexName());
-            List<AnnouncementDetailsResponse.Attachment> attachments = buildAttachmentsFrom(lhDetail.getHouseComplexAttachment(), lhDetailHouseComplexValue.getHouseComplexName());
+            List<AnnouncementDetailResponse.HouseType> houseTypes = buildHouseTypesFrom(lhSupplyInfo, lhDetailHouseComplexValue.getHouseComplexName());
+            List<AnnouncementDetailResponse.Attachment> attachments = buildAttachmentsFrom(lhDetail.getHouseComplexAttachment(), lhDetailHouseComplexValue.getHouseComplexName());
 
             houseComplex.setHouseTypes(houseTypes);
             houseComplex.setAttachments(attachments);
@@ -255,19 +265,19 @@ public class AnnouncementService {
         return houseComplexes;
     }
 
-    private List<AnnouncementDetailsResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse.HouseComplexAttachment lhDetailHouseComplexAttachment, String houseComplexName) {
+    private List<AnnouncementDetailResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse.HouseComplexAttachment lhDetailHouseComplexAttachment, String houseComplexName) {
         return lhDetailHouseComplexAttachment.getValues().stream()
                 .filter(lhDetailHouseComplexAttachmentValue -> isEqualsIgnoringWhitespaces(lhDetailHouseComplexAttachmentValue.getHouseComplexName(), houseComplexName))
-                .map(AnnouncementDetailsResponse.Attachment::buildFrom)
+                .map(AnnouncementDetailResponse.Attachment::buildFrom)
                 .toList();
     }
 
-    private List<AnnouncementDetailsResponse.HouseType> buildHouseTypesFrom(LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseComplexName) {
+    private List<AnnouncementDetailResponse.HouseType> buildHouseTypesFrom(LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseComplexName) {
         LHAnnouncementSupplyInfoResponse.Label lhSupplyInfoLabel = lhSupplyInfo.getLabel();
 
         return lhSupplyInfo.getValues().stream()
                 .filter(lhSupplyInfoValue -> isEqualsIgnoringWhitespaces(lhSupplyInfoValue.getHouseComplexName(), houseComplexName))
-                .map(AnnouncementDetailsResponse.HouseType::buildFrom)
+                .map(AnnouncementDetailResponse.HouseType::buildFrom)
                 .toList();
     }
 
@@ -281,5 +291,53 @@ public class AnnouncementService {
         } else {
             return "";
         }
+    }
+
+    /**
+     * 공고 저장
+     */
+    @Transactional(readOnly = false)
+    public AnnouncementEntity save(AnnouncementEntity entity) {
+        return announcementRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 주택단지 저장
+     */
+    @Transactional(readOnly = false)
+    public HouseComplexEntity save(HouseComplexEntity entity) {
+        return houseComplexRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 주택단지별 첨부파일 저장
+     */
+    @Transactional(readOnly = false)
+    public HouseComplexAttachmentEntity save(HouseComplexAttachmentEntity entity) {
+        return houseComplexAttachmentRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 공급일정 저장
+     */
+    @Transactional(readOnly = false)
+    public SupplyScheduleEntity save(SupplyScheduleEntity entity) {
+        return supplyScheduleRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 접수처 저장
+     */
+    @Transactional(readOnly = false)
+    public ReceptionEntity save(ReceptionEntity entity) {
+        return receptionRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 기타 저장
+     */
+    @Transactional(readOnly = false)
+    public EtcEntity save(EtcEntity entity) {
+        return etcRepository.save(entity);
     }
 }

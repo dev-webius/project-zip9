@@ -1,3 +1,27 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: update
+    generate-ddl: false
+    show-sql: true
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://db-zip9-dev.cn4mqqzyy9s3.ap-northeast-2.rds.amazonaws.com/zip9?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: admin
+    password: qawsedrf1!
+
 springdoc:
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
+
+logging:
+  level:
+    org.hibernate.SQL: OFF
+    org.hibernate.type: trace

@@ -1,8 +1,17 @@
 package com.zip9.api.LH.dto;
 
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.zip9.api.LH.enums.HouseSupplyType;
-import lombok.*;
+import com.zip9.api.common.exception.GeneralException;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,16 +48,9 @@ public class LHAnnouncementDetailResponse {
     @Getter
     public static class Reception {
         @JsonProperty("dsCtrtPlcNm")
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsCtrtPlc")
         private List<Value> values = new ArrayList<>();
-
-        @JsonSetter("dsCtrtPlcNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
 
         @Getter
         public static class Label {
@@ -102,17 +104,17 @@ public class LHAnnouncementDetailResponse {
     public static class HouseComplex {
         @JsonProperty("dsSbdNm")
         @Builder.Default
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsSbd")
         @Builder.Default
         private List<Value> values = new ArrayList<>();
 
-        @JsonSetter("dsSbdNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
+//        @JsonSetter("dsSbdNm")
+//        public void setLabel(List<Label> labels) {
+//            if (!labels.isEmpty()) {
+//                this.label = labels.get(0);
+//            }
+//        }
 
         @Getter
         public static class Label {
@@ -187,16 +189,9 @@ public class LHAnnouncementDetailResponse {
     @Getter
     public static class HouseComplexAttachment {
         @JsonProperty("dsSbdAhflNm")
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsSbdAhfl")
         private List<Value> values = new ArrayList<>();
-
-        @JsonSetter("dsSbdAhflNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
 
         @Getter
         public static class Label {
@@ -234,17 +229,10 @@ public class LHAnnouncementDetailResponse {
     public static class SupplySchedule {
         @JsonProperty("dsSplScdlNm")
         @Builder.Default
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsSplScdl")
         @Builder.Default
         private List<Value> values = new ArrayList<>();
-
-        @JsonSetter("dsSplScdlNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
 
         @Getter
         public static class Label {
@@ -325,6 +313,10 @@ public class LHAnnouncementDetailResponse {
             private String houseBrowseEndDate = "";
         }
 
+        public Label getLabel() {
+            return labels.stream().findFirst().orElse(new Label());
+        }
+
         public static Boolean existTargetOf(String houseSupplyTypeCode) {
             return Stream.of(HouseSupplyType.PRE_SALE_HOUSE, HouseSupplyType.PUBLIC_RENTAL_FOR_5_OR_10_YEARS, HouseSupplyType.HOME_BASED_CHILDCARE_CENTER, HouseSupplyType.NEWLYWEDS)
                     .anyMatch(type -> type.code.equals(houseSupplyTypeCode));
@@ -334,16 +326,9 @@ public class LHAnnouncementDetailResponse {
     @Getter
     public static class Attachment {
         @JsonProperty("dsAhflInfoNm")
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsAhflInfo")
         private List<Value> values = new ArrayList<>();
-
-        @JsonSetter("dsAhflInfoNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
 
         @Getter
         public static class Label {
@@ -369,16 +354,9 @@ public class LHAnnouncementDetailResponse {
     @Getter
     public static class Etc {
         @JsonProperty("dsEtcInfoNm")
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsEtcInfo")
         private List<Value> values = new ArrayList<>();
-
-        @JsonSetter("dsEtcInfoNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
 
         @Getter
         public static class Label {
@@ -468,16 +446,9 @@ public class LHAnnouncementDetailResponse {
     @Getter
     public static class Qualification {
         @JsonProperty("dsEtcListNm")
-        private Label label = new Label();
+        private List<Label> labels = new ArrayList<>();
         @JsonProperty("dsEtcList")
         private List<Value> values = new ArrayList<>();
-
-        @JsonSetter("dsEtcListNm")
-        public void setLabel(List<Label> labels) {
-            if (!labels.isEmpty()) {
-                this.label = labels.get(0);
-            }
-        }
 
         @Getter
         public static class Label {
@@ -493,6 +464,18 @@ public class LHAnnouncementDetailResponse {
             private String qualificationTypeName;
             @JsonProperty("ETC_CTS")
             private String description;
+        }
+    }
+
+    public static LHAnnouncementDetailResponse jsonToObject(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            return mapper.readValue(json, LHAnnouncementDetailResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new GeneralException(e);
         }
     }
 }

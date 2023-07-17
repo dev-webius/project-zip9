@@ -1,7 +1,7 @@
 package com.zip9.api.announcement.controller;
 
 import com.zip9.api.announcement.dto.AnnouncementDetailRequest;
-import com.zip9.api.announcement.dto.AnnouncementDetailsResponse;
+import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
 import com.zip9.api.announcement.dto.AnnouncementRequest;
 import com.zip9.api.announcement.dto.AnnouncementResponse;
 import com.zip9.api.announcement.service.AnnouncementService;
@@ -40,13 +40,13 @@ public class AnnouncementController {
 
     @Operation(summary = "공고 상세정보 조회", description = "공고 상세정보 조회")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementDetailsResponse.class))),
+            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementDetailResponse.class))),
             @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Requested resource is not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @GetMapping("/{announcementId}")
-    public SuccessResponse<AnnouncementDetailsResponse> getAnnouncementDetail(@ParameterObject @Valid AnnouncementDetailRequest request) {
+    public SuccessResponse<AnnouncementDetailResponse> getAnnouncementDetail(@ParameterObject @Valid AnnouncementDetailRequest request) {
         return SuccessResponse.of(announcementService.getAnnouncementDetail(request));
     }
 }

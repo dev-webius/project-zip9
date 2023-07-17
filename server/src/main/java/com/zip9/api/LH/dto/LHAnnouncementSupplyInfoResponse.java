@@ -1,6 +1,15 @@
 package com.zip9.api.LH.dto;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.zip9.api.common.exception.GeneralException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,11 +26,14 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LHAnnouncementSupplyInfoResponse {
     @JsonProperty("dsList01Nm")
-    private Label label01;
+    @Builder.Default
+    private List<Label> labels01 = new ArrayList<>();
     @JsonProperty("dsList02Nm")
-    private Label label02;
+    @Builder.Default
+    private List<Label> labels02 = new ArrayList<>();
     @JsonProperty("dsList03Nm")
-    private Label label03;
+    @Builder.Default
+    private List<Label> labels03 = new ArrayList<>();
     @JsonProperty("dsList01")
     @Builder.Default
     private List<Value> values01 = new ArrayList<>();
@@ -31,19 +43,6 @@ public class LHAnnouncementSupplyInfoResponse {
     @JsonProperty("dsList03")
     @Builder.Default
     private List<Value> values03 = new ArrayList<>();
-
-    @JsonSetter("dsList01Nm")
-    public void setLabel01(List<Label> labels) {
-        this.label01 = labels.stream().filter(ObjectUtils::isNotEmpty).findAny().orElse(null);
-    }
-    @JsonSetter("dsList02Nm")
-    public void setLabel02(List<Label> labels) {
-        this.label02 = labels.stream().filter(ObjectUtils::isNotEmpty).findAny().orElse(null);
-    }
-    @JsonSetter("dsList03Nm")
-    public void setLabel03(List<Label> labels) {
-        this.label03 = labels.stream().filter(ObjectUtils::isNotEmpty).findAny().orElse(null);
-    }
 
     @JsonSetter("dsList01")
     public void setValues01(List<Value> values) {
@@ -62,11 +61,11 @@ public class LHAnnouncementSupplyInfoResponse {
 
     public Label getLabel() {
         if (!values01.isEmpty()) {
-            return label01;
+            return labels01.stream().findFirst().orElse(new Label());
         } else if (!values02.isEmpty()) {
-            return label02;
+            return labels02.stream().findFirst().orElse(new Label());
         } else if (!values03.isEmpty()) {
-            return label03;
+            return labels03.stream().findFirst().orElse(new Label());
         } else {
             return new Label();
         }
@@ -157,4 +156,15 @@ public class LHAnnouncementSupplyInfoResponse {
         }
     }
 
+    public static LHAnnouncementSupplyInfoResponse jsonToObject(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            return mapper.readValue(json, LHAnnouncementSupplyInfoResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new GeneralException(e);
+        }
+    }
 }

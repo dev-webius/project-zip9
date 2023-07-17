@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnnouncementDetailsResponse {
+public class AnnouncementDetailResponse {
     @Schema(description = "공급일정")
     private List<SupplySchedule> supplySchedules;
     @Schema(description = "단지정보")
@@ -58,7 +59,7 @@ public class AnnouncementDetailsResponse {
         private String netLeasableAreaRange = "";
         @Builder.Default
         @Schema(description = "총세대수")
-        private String totalOfHousehold = "";
+        private Integer totalOfHousehold = 0;
         @Builder.Default
         @Schema(description = "난방방식")
         private String heatingTypeName = "";
@@ -89,7 +90,13 @@ public class AnnouncementDetailsResponse {
 
         @JsonIgnore
         public String getNameOrDetailAddress() {
-            return StringUtils.hasLength(name) ? name : detailAddress;
+            if (StringUtils.hasLength(name)) {
+                return name;
+            } else if (StringUtils.hasLength(detailAddress)) {
+                return detailAddress;
+            } else {
+                return address;
+            }
         }
 
         public static HouseComplex buildFrom(LHAnnouncementDetailResponse.HouseComplex.Value lhDetailHouseComplexValue) {
@@ -98,7 +105,7 @@ public class AnnouncementDetailsResponse {
                     .address(lhDetailHouseComplexValue.getHouseComplexAddress())
                     .detailAddress(lhDetailHouseComplexValue.getHouseComplexDetailAddress())
                     .netLeasableAreaRange(lhDetailHouseComplexValue.getNetLeasableArea())
-                    .totalOfHousehold(lhDetailHouseComplexValue.getTotalHouseholdCount())
+                    .totalOfHousehold(NumberUtils.toInt(lhDetailHouseComplexValue.getTotalHouseholdCount(), 0))
                     .heatingTypeName(lhDetailHouseComplexValue.getHeatingTypeName())
                     .expectedMoveInDate(lhDetailHouseComplexValue.getExpectedMoveInDate())
                     .trafficFacilities(lhDetailHouseComplexValue.getTrafficFacilities())
