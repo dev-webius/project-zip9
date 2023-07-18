@@ -43,6 +43,8 @@ public class QHouseComplexEntity extends EntityPathBase<HouseComplexEntity> {
 
     public final StringPath heatingTypeName = createString("heatingTypeName");
 
+    public final ListPath<HouseTypeEntity, QHouseTypeEntity> houseTypes = this.<HouseTypeEntity, QHouseTypeEntity>createList("houseTypes", HouseTypeEntity.class, QHouseTypeEntity.class, PathInits.DIRECT2);
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     //inherited

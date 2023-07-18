@@ -12,7 +12,6 @@ import org.hibernate.annotations.Comment;
 @Table(name = "TB_HOUSE_COMPLEX_ATTACHMENT",  indexes = {
         @Index(name = "IDX_ANNOUNCEMENT_01", columnList = "CREATED_AT", unique = false),
         @Index(name = "IDX_ANNOUNCEMENT_02", columnList = "MODIFIED_AT", unique = false),
-        @Index(name = "IDX_ANNOUNCEMENT_03", columnList = "HOUSE_COMPLEX_ID", unique = false),
 })
 @Entity
 @Getter

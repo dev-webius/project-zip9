@@ -38,7 +38,7 @@ public class ReceptionEntity extends BaseTimeEntity {
     @Comment("안내사항")
     private String receptionGuide;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "ANNOUNCEMENT_ID")
     @Comment("공고 ID")
     private AnnouncementEntity announcement;

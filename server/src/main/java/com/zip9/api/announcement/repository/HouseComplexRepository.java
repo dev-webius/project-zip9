@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface HouseComplexRepository extends JpaRepository<HouseComplexEntity, Long> {
     List<HouseComplexEntity> findAllByAnnouncement(AnnouncementEntity announcement);
+    List<HouseComplexEntity> findAllByAnnouncementId(Long announcementId);
 }

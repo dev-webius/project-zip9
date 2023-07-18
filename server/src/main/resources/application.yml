@@ -23,5 +23,5 @@ springdoc:
 
 logging:
   level:
-    org.hibernate.SQL: OFF
+    org.hibernate.SQL: debug
     org.hibernate.type: trace

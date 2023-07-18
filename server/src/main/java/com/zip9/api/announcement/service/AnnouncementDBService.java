@@ -9,8 +9,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,14 +20,38 @@ import java.util.stream.Collectors;
 public class AnnouncementDBService implements AnnouncementReadService {
     private AnnouncementRepository announcementRepository;
     private HouseComplexRepository houseComplexRepository;
+    private HouseComplexPositionRepository houseComplexPositionRepository;
+    private HouseTypeRepository houseTypeRepository;
     private HouseComplexAttachmentRepository houseComplexAttachmentRepository;
     private SupplyScheduleRepository supplyScheduleRepository;
     private ReceptionRepository receptionRepository;
     private EtcRepository etcRepository;
 
+    /**
+     * 공고 목록 조회
+     */
     @Override
     public AnnouncementResponse getAnnouncements(AnnouncementRequest request) {
+        // 공고 목록 조회
         List<Announcement> announcements = announcementRepository.findAnnouncements(request);
+
+        // 단지별 위치정보 셋팅
+        for (Announcement announcement : announcements) {
+            List<HouseComplexEntity> houseComplexEntities = houseComplexRepository.findAllByAnnouncementId(announcement.getId());
+
+            List<AnnouncementResponse.Position> positions = new ArrayList<>();
+
+            for (HouseComplexEntity houseComplex : houseComplexEntities) {
+                HouseComplexPositionEntity houseComplexPosition = houseComplexPositionRepository.findByHouseComplex(houseComplex);
+
+                Optional.of(houseComplexPosition).ifPresent(h -> {
+                    AnnouncementResponse.Position position = AnnouncementResponse.Position.buildFrom(h);
+                    positions.add(position);
+                });
+            }
+
+            announcement.setPositions(positions);
+        }
 
         // API Response 데이터 생성
         AnnouncementResponse response = new AnnouncementResponse();
@@ -46,6 +72,9 @@ public class AnnouncementDBService implements AnnouncementReadService {
         return response;
     }
 
+    /**
+     * 공고 상세정보 조회
+     */
     @Override
     public AnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
         AnnouncementEntity announcement = announcementRepository.findById(request.getAnnouncementId()).orElseThrow(() -> new GeneralException(Code.NOT_FOUND));
@@ -93,6 +122,22 @@ public class AnnouncementDBService implements AnnouncementReadService {
     @Transactional(readOnly = false)
     public HouseComplexEntity save(HouseComplexEntity entity) {
         return houseComplexRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 주택단지 위치정보 저장
+     */
+    @Transactional(readOnly = false)
+    public HouseComplexPositionEntity save(HouseComplexPositionEntity entity) {
+        return houseComplexPositionRepository.save(entity);
+    }
+
+    /**
+     * 공고 상세 - 주택단지별 주택타입 저장
+     */
+    @Transactional(readOnly = false)
+    public HouseTypeEntity save(HouseTypeEntity entity) {
+        return houseTypeRepository.save(entity);
     }
 
     /**

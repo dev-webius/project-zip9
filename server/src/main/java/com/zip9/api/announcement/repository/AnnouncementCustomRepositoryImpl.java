@@ -32,6 +32,7 @@ public class AnnouncementCustomRepositoryImpl implements AnnouncementCustomRepos
                 Projections.constructor(
                         Announcement.class,
                         qAnnouncement.id,
+                        qAnnouncement.thirdPartyId,
                         qAnnouncement.title,
                         qAnnouncement.statusCode, /*ENUM*/
                         qAnnouncement.typeCode, /*ENUM*/

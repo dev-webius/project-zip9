@@ -2,11 +2,13 @@ package com.zip9.api.announcement.dto;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.zip9.api.LH.enums.City;
+import com.zip9.api.announcement.entity.HouseComplexPositionEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,5 +64,19 @@ public class AnnouncementResponse {
         String x;
         @Schema(description = "위도")
         String y;
+
+        public static Position buildFrom(HouseComplexPositionEntity entity) {
+            if (ObjectUtils.isEmpty(entity)) {
+                return new Position();
+            } else {
+                return Position.builder()
+                        .houseComplexName(AnnouncementDetailResponse.HouseComplex.buildFrom(entity.getHouseComplex()).getNameOrDetailAddress())
+                        .address(entity.getRoadAddress())
+                        .x(entity.getX())
+                        .y(entity.getY())
+                        .build();
+            }
+        }
+
     }
 }

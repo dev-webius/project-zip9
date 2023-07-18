@@ -3,10 +3,7 @@ package com.zip9.api.announcement.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
 import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
-import com.zip9.api.announcement.entity.EtcEntity;
-import com.zip9.api.announcement.entity.HouseComplexEntity;
-import com.zip9.api.announcement.entity.ReceptionEntity;
-import com.zip9.api.announcement.entity.SupplyScheduleEntity;
+import com.zip9.api.announcement.entity.*;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -121,6 +118,8 @@ public class AnnouncementDetailResponse {
         }
 
         public static HouseComplex buildFrom(HouseComplexEntity houseComplexEntity) {
+            List<HouseType> houseTypes = houseComplexEntity.getHouseTypes().stream().map(HouseType::buildFrom).toList();
+
             return HouseComplex.builder()
                     .name(houseComplexEntity.getName())
                     .address(houseComplexEntity.getAddress())
@@ -134,6 +133,7 @@ public class AnnouncementDetailResponse {
                     .convenientFacilities(houseComplexEntity.getConvenientFacilities())
                     .appurtenantFacilities(houseComplexEntity.getAppurtenantFacilities())
                     .supplyInfoGuide(houseComplexEntity.getSupplyInfoGuide())
+                    .houseTypes(houseTypes)
                     .build();
         }
 
@@ -161,16 +161,16 @@ public class AnnouncementDetailResponse {
         private String netLeasableArea = "";
         @Builder.Default
         @Schema(description = "세대수")
-        private String numberOfHousehold = "";
+        private Integer numberOfHousehold = 0;
         @Builder.Default
-        @Schema(description = "금회공급세대수")
-        private String numberOfSupplyHousehold = "";
+        @Schema(description = "공급세대수")
+        private Integer numberOfSupplyHousehold = 0;
         @Builder.Default
         @Schema(description = "모집인원")
-        private String numberOfApplicants = "";
+        private Integer numberOfApplicants = 0;
         @Builder.Default
         @Schema(description = "예비자수")
-        private String numberOfCandidates = "";
+        private Integer numberOfCandidates = 0;
         @Builder.Default
         @Schema(description = "임대보증금")
         private String amount = "";
@@ -186,13 +186,28 @@ public class AnnouncementDetailResponse {
                     .houseTypeName(lhHouseSupplyInfoValue.getHouseTypeName())
                     .supplyArea(lhHouseSupplyInfoValue.getSupplyArea())
                     .netLeasableArea(lhHouseSupplyInfoValue.getNetLeasableArea())
-                    .numberOfHousehold(lhHouseSupplyInfoValue.getNumberOfHousehold())
-                    .numberOfSupplyHousehold(lhHouseSupplyInfoValue.getNumberOfSupplyHousehold())
-                    .numberOfApplicants(lhHouseSupplyInfoValue.getNumberOfApplicants())
-                    .numberOfCandidates(lhHouseSupplyInfoValue.getNumberOfCandidates())
+                    .numberOfHousehold(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfHousehold(), 0))
+                    .numberOfSupplyHousehold(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfSupplyHousehold(), 0))
+                    .numberOfApplicants(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfApplicants(), 0))
+                    .numberOfCandidates(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfCandidates(), 0))
                     .amount(lhHouseSupplyInfoValue.getAmount())
                     .rentFee(lhHouseSupplyInfoValue.getRentFee())
                     .rentFeeEtc(lhHouseSupplyInfoValue.getRentFeeEtc())
+                    .build();
+        }
+
+        public static HouseType buildFrom(HouseTypeEntity houseTypeEntity) {
+            return HouseType.builder()
+                    .houseTypeName(houseTypeEntity.getHouseTypeName())
+                    .supplyArea(houseTypeEntity.getSupplyArea())
+                    .netLeasableArea(houseTypeEntity.getNetLeasableArea())
+                    .numberOfHousehold(houseTypeEntity.getNumberOfHousehold())
+                    .numberOfSupplyHousehold(houseTypeEntity.getNumberOfSupplyHousehold())
+                    .numberOfApplicants(houseTypeEntity.getNumberOfApplicants())
+                    .numberOfCandidates(houseTypeEntity.getNumberOfCandidates())
+                    .amount(houseTypeEntity.getAmount())
+                    .rentFee(houseTypeEntity.getRentFee())
+                    .rentFeeEtc(houseTypeEntity.getRentFeeEtc())
                     .build();
         }
     }

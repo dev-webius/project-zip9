@@ -10,6 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Table(name = "TB_HOUSE_COMPLEX", indexes = {
         @Index(name = "IDX_ANNOUNCEMENT_01", columnList = "CREATED_AT", unique = false),
         @Index(name = "IDX_ANNOUNCEMENT_02", columnList = "MODIFIED_AT", unique = false),
@@ -64,6 +67,9 @@ public class HouseComplexEntity extends BaseTimeEntity {
     @JoinColumn(name = "ANNOUNCEMENT_ID")
     @Comment("공고 ID")
     private AnnouncementEntity announcement;
+
+    @OneToMany(mappedBy = "houseComplex", fetch = FetchType.EAGER)
+    private List<HouseTypeEntity> houseTypes = new ArrayList<>();
 
     @Builder(builderMethodName = "ByAnnouncementDetailHouseComplexBuilder")
     public HouseComplexEntity(AnnouncementDetailResponse.HouseComplex houseComplex, AnnouncementEntity announcement) {

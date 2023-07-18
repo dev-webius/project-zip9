@@ -16,7 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 public class Announcement {
     @Schema(description = "공고 ID")
-    private String id;
+    private Long id;
+    @Schema(description = "타사 공고 ID")
+    private String thirdPartyId;
     @Schema(description = "공고명")
     private String title;
     @Schema(description = "공고상태명")
@@ -55,7 +57,7 @@ public class Announcement {
         Assert.notNull(AnnouncementDetailType.codeOf(lhAnnouncement.getAnnouncementDetailTypeCode()), "'announcementDetailType' is invalid.");
         Assert.notNull(HouseSupplyType.codeOf(lhAnnouncement.getSupplyTypeCode()), "'houseSupplyType' is invalid.");
 
-        this.id = lhAnnouncement.getId();
+        this.thirdPartyId = lhAnnouncement.getId();
         this.title = lhAnnouncement.getTitle();
         this.statusName = lhAnnouncement.getAnnouncementStatusName();
         this.announcementTypeName = lhAnnouncement.getAnnouncementTypeName();
@@ -74,8 +76,9 @@ public class Announcement {
 //        this.csTypeCode = lhAnnouncement.getCrmCode();
     }
 
-    public Announcement(String id, String title, String statusCode, String announcementTypeCode, String announcementDetailTypeCode, String cityCode, String detailUrl, String detailUrlMobile, LocalDateTime announcedAt, LocalDateTime closedAt, String supplyTypeCode) {
+    public Announcement(Long id, String thirdPartyId, String title, String statusCode, String announcementTypeCode, String announcementDetailTypeCode, String cityCode, String detailUrl, String detailUrlMobile, LocalDateTime announcedAt, LocalDateTime closedAt, String supplyTypeCode) {
         this.id = id;
+        this.thirdPartyId = thirdPartyId;
         this.title = title;
         this.statusName = AnnouncementStatus.valueOf(statusCode).name;
         this.announcementTypeName = AnnouncementType.codeOf(announcementTypeCode).name;
@@ -99,5 +102,9 @@ public class Announcement {
 
     public void setCityShortName(String cityShortName) {
         this.cityShortName = cityShortName;
+    }
+
+    public void setPositions(List<AnnouncementResponse.Position> positions) {
+        this.positions = positions;
     }
 }

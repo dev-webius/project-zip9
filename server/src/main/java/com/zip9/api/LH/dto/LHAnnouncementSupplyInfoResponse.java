@@ -1,9 +1,6 @@
 package com.zip9.api.LH.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,6 +56,7 @@ public class LHAnnouncementSupplyInfoResponse {
         this.values03 = values.stream().filter(ObjectUtils::isNotEmpty).toList();
     }
 
+    @JsonIgnore
     public Label getLabel() {
         if (!values01.isEmpty()) {
             return labels01.stream().findFirst().orElse(new Label());
@@ -70,7 +68,7 @@ public class LHAnnouncementSupplyInfoResponse {
             return new Label();
         }
     }
-
+    @JsonIgnore
     public List<Value> getValues() {
         if (!values01.isEmpty()) {
             return values01;
@@ -89,9 +87,15 @@ public class LHAnnouncementSupplyInfoResponse {
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SupplyInfo {
+        @JsonProperty("SBD_CNP_NM")
+        @JsonAlias({"CNP_NM", "SGG_NM", "ARA", "ADR"})
         @Builder.Default
-        private List<String> addresses = new ArrayList<>();
-        @JsonSetter("BZDT_NM")
+        private String address = "";
+        @JsonProperty("LTR_UNT_NM")
+        @JsonAlias({"SBD_LGO_ADR", "DNG_HS_ADR"})
+        @Builder.Default
+        private String detailAddress = "";
+        @JsonProperty("BZDT_NM")
         @JsonAlias({"SBD_LGO_NM", "HO_NO", "VLD_VL_NM"})
         @Builder.Default
         private String houseComplexName = "";
@@ -132,27 +136,21 @@ public class LHAnnouncementSupplyInfoResponse {
         @JsonProperty("MM_RFE_ETC")
         @Builder.Default
         private String rentFeeEtc = "";
-
-        @JsonSetter("SBD_CNP_NM")
-        @JsonAlias({"CNP_NM", "SGG_NM", "ARA", "ADR", "LTR_UNT_NM", "SBD_LGO_ADR", "DNG_HS_ADR"})
-        public void setAddresses(String address) {
-            this.addresses.add(address);
-        }
     }
 
     @Getter
     @NoArgsConstructor
     public static class Label extends SupplyInfo {
-        public Label(List<String> addresses, String houseInfo, String houseTypeName, String supplyArea, String netLeasableArea, String numberOfHousehold, String numberOfSupplyHousehold, String numberOfApplicants, String numberOfCandidates, String amount, String rentFee, String rentFeeEtc) {
-            super(addresses, houseInfo, houseTypeName, supplyArea, netLeasableArea, numberOfHousehold, numberOfSupplyHousehold, numberOfApplicants, numberOfCandidates, amount, rentFee, rentFeeEtc);
+        public Label(String address, String detailAddress, String houseInfo, String houseTypeName, String supplyArea, String netLeasableArea, String numberOfHousehold, String numberOfSupplyHousehold, String numberOfApplicants, String numberOfCandidates, String amount, String rentFee, String rentFeeEtc) {
+            super(address, detailAddress, houseInfo, houseTypeName, supplyArea, netLeasableArea, numberOfHousehold, numberOfSupplyHousehold, numberOfApplicants, numberOfCandidates, amount, rentFee, rentFeeEtc);
         }
     }
 
     @Getter
     @NoArgsConstructor
     public static class Value extends SupplyInfo {
-        public Value(List<String> addresses, String houseInfo, String houseTypeName, String supplyArea, String netLeasableArea, String numberOfHousehold, String numberOfSupplyHousehold, String numberOfApplicants, String numberOfCandidates, String amount, String rentFee, String rentFeeEtc) {
-            super(addresses, houseInfo, houseTypeName, supplyArea, netLeasableArea, numberOfHousehold, numberOfSupplyHousehold, numberOfApplicants, numberOfCandidates, amount, rentFee, rentFeeEtc);
+        public Value(String address, String detailAddress, String houseInfo, String houseTypeName, String supplyArea, String netLeasableArea, String numberOfHousehold, String numberOfSupplyHousehold, String numberOfApplicants, String numberOfCandidates, String amount, String rentFee, String rentFeeEtc) {
+            super(address, detailAddress, houseInfo, houseTypeName, supplyArea, netLeasableArea, numberOfHousehold, numberOfSupplyHousehold, numberOfApplicants, numberOfCandidates, amount, rentFee, rentFeeEtc);
         }
     }
 

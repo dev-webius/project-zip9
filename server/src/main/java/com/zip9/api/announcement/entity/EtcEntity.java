@@ -59,7 +59,7 @@ public class EtcEntity extends BaseTimeEntity {
     @Comment("공동생활가정 운영기관")
     private String groupHomeAgency;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "ANNOUNCEMENT_ID")
     @Comment("공고 ID")
     private AnnouncementEntity announcement;

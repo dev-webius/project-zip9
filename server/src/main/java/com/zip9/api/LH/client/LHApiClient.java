@@ -64,7 +64,7 @@ public class LHApiClient implements Client {
     public LHAnnouncementSupplyInfoResponse getAnnouncementSupplyInfo(LHAnnouncementDetailAndSupplyRequest request) {
         Flux<Object> flux = webClient
                 .get()
-                .uri(buildUriWithQueryParmas(request))
+                .uri(buildUriWithQueryParmas(PUBLIC_RENTAL_ANNOUNCEMENT_SUPPLY_URI, request))
                 .retrieve()
                 .bodyToFlux(Object.class);
 
@@ -80,7 +80,7 @@ public class LHApiClient implements Client {
     public LHAnnouncementDetailResponse getAnnouncementDetail(LHAnnouncementDetailAndSupplyRequest request) {
         Flux<Object> flux = webClient
                 .get()
-                .uri(buildUriWithQueryParmas(request))
+                .uri(buildUriWithQueryParmas(PUBLIC_RENTAL_ANNOUNCEMENT_DETAIL_URI, request))
                 .retrieve()
                 .bodyToFlux(Object.class);
 
@@ -132,9 +132,9 @@ public class LHApiClient implements Client {
         return builder.build().toUriString();
     }
 
-    private String buildUriWithQueryParmas(LHAnnouncementDetailAndSupplyRequest request) {
+    private String buildUriWithQueryParmas(String uri, LHAnnouncementDetailAndSupplyRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder
-                .fromPath(PUBLIC_RENTAL_ANNOUNCEMENT_DETAIL_URI)
+                .fromPath(uri)
                 .queryParam("serviceKey", DECODED_SERVICE_KEY)
                 .queryParam("PAN_ID", request.getAnnouncementId())
                 .queryParam("UPP_AIS_TP_CD", request.getAnnouncementTypeCode())
