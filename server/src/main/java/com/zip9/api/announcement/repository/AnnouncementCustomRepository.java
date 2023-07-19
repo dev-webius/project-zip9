@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AnnouncementCustomRepository {
     List<Announcement> findAnnouncements(AnnouncementRequest request);
+    Long countAnnouncements(AnnouncementRequest request);
 }

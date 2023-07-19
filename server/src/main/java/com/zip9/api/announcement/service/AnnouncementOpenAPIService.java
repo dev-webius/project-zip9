@@ -2,7 +2,6 @@ package com.zip9.api.announcement.service;
 
 import com.zip9.api.LH.dto.LHAnnouncementDetailAndSupplyRequest;
 import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
-import com.zip9.api.LH.dto.LHAnnouncementResponse;
 import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
 import com.zip9.api.LH.enums.HouseSupplyType;
 import com.zip9.api.LH.service.LHService;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,56 +29,56 @@ public class AnnouncementOpenAPIService implements AnnouncementReadService {
      * 공고 목록 조회
      */
     @Override
-    public AnnouncementResponse getAnnouncements(AnnouncementRequest request) {
-        // LH 공고 리스트
-        List<LHAnnouncementResponse> lhAnnouncements = request.buildLHRequests().stream()
-                .map(lhRequest -> lhService.searchAnnouncements(lhRequest))
-                .flatMap(List::stream)
-                .toList()
-                .stream()
-                .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
-                .toList();
-
-        // 공고 응답 데이터 생성 - 공고 내 단지별 위치정보 조회
-        List<Announcement> announcements = lhAnnouncements.stream()
-                .map(lhAnnouncement -> {
-                            // 공고 상세 조회
-                            LHAnnouncementDetailResponse lhAnnouncementDetail = lhService.getAnnouncementDetail(
-                                    LHAnnouncementDetailAndSupplyRequest.ByLHAnnouncementBuilder()
-                                            .lhAnnouncement(lhAnnouncement)
-                                            .build()
-                            );
-
-                            // 응답 데이터 생성
-                            return Announcement.ByLHAnnouncement()
-                                    .lhAnnouncement(lhAnnouncement)
-                                    .positions(buildPositionOfHouesComplex(lhAnnouncementDetail))
-                                    .build();
-                        }
-                )
-                .toList();
+    public AnnouncementsResponse getAnnouncements(AnnouncementRequest request) {
+//        // LH 공고 리스트
+//        List<LHAnnouncementResponse> lhAnnouncements = request.buildLHRequests().stream()
+//                .map(lhRequest -> lhService.searchAnnouncements(lhRequest))
+//                .flatMap(List::stream)
+//                .toList()
+//                .stream()
+//                .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
+//                .toList();
+//
+//        // 공고 응답 데이터 생성 - 공고 내 단지별 위치정보 조회
+//        List<Announcement> announcements = lhAnnouncements.stream()
+//                .map(lhAnnouncement -> {
+//                            // 공고 상세 조회
+//                            LHAnnouncementDetailResponse lhAnnouncementDetail = lhService.getAnnouncementDetail(
+//                                    LHAnnouncementDetailAndSupplyRequest.ByLHAnnouncementBuilder()
+//                                            .lhAnnouncement(lhAnnouncement)
+//                                            .build()
+//                            );
+//
+//                            // 응답 데이터 생성
+//                            return Announcement.ByLHAnnouncement()
+//                                    .lhAnnouncement(lhAnnouncement)
+//                                    .positions(buildPositionOfHouesComplex(lhAnnouncementDetail))
+//                                    .build();
+//                        }
+//                )
+//                .toList();
 
         // API Response 데이터 생성
-        AnnouncementResponse response = new AnnouncementResponse();
+        AnnouncementsResponse response = new AnnouncementsResponse();
 
 
-        for (Announcement announcement : announcements) {
-            Map<String, Integer> numberOfAnnouncementsByCity = response.getMeta().getNumberOfAnnouncementsByCity();
-
-            // 도시별 공고 추가
-            response.getItem().getAnnouncements().get(announcement.getCityShortName()).add(announcement);
-
-            // 도시별 공고수 증가
-            numberOfAnnouncementsByCity.put(
-                    announcement.getCityShortName(),
-                    numberOfAnnouncementsByCity.get(announcement.getCityShortName()) + 1
-            );
-        }
+//        for (Announcement announcement : announcements) {
+//            Map<String, Integer> numberOfAnnouncementsByCity = response.getMeta().getNumberOfAnnouncementsByCity();
+//
+//            // 도시별 공고 추가
+//            response.getItem().getAnnouncements().get(announcement.getCityShortName()).add(announcement);
+//
+//            // 도시별 공고수 증가
+//            numberOfAnnouncementsByCity.put(
+//                    announcement.getCityShortName(),
+//                    numberOfAnnouncementsByCity.get(announcement.getCityShortName()) + 1
+//            );
+//        }
 
         return response;
     }
 
-    public List<AnnouncementResponse.Position> buildPositionOfHouesComplex(LHAnnouncementDetailResponse lhAnnouncementDetail) {
+    public List<Announcement.Position> buildPositionOfHouesComplex(LHAnnouncementDetailResponse lhAnnouncementDetail) {
         List<AnnouncementDetailResponse.HouseComplex> houseComplexes = lhAnnouncementDetail.getHouseComplex().getValues().stream()
                 .map(AnnouncementDetailResponse.HouseComplex::buildFrom)
                 .toList();
@@ -88,7 +86,7 @@ public class AnnouncementOpenAPIService implements AnnouncementReadService {
         return houseComplexes.stream().map(this::buildPositionOfHouseComplex).toList();
     }
 
-    private AnnouncementResponse.Position buildPositionOfHouseComplex(AnnouncementDetailResponse.HouseComplex houseComplex) {
+    private Announcement.Position buildPositionOfHouseComplex(AnnouncementDetailResponse.HouseComplex houseComplex) {
         GeocodingResponse.Address address = new GeocodingResponse.Address();
 
         if (StringUtils.hasLength(houseComplex.getName())) {
@@ -108,14 +106,14 @@ public class AnnouncementOpenAPIService implements AnnouncementReadService {
         }
 
         if (address.hasPosition()) {
-            return AnnouncementResponse.Position.builder()
+            return Announcement.Position.builder()
                     .houseComplexName(houseComplex.getNameOrDetailAddress())
                     .address(address.getAddress())
                     .x(address.getX())
                     .y(address.getY())
                     .build();
         } else {
-            return new AnnouncementResponse.Position();
+            return new Announcement.Position();
         }
     }
 

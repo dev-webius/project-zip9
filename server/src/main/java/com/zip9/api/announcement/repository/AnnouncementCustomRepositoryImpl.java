@@ -20,11 +20,6 @@ import java.util.List;
 public class AnnouncementCustomRepositoryImpl implements AnnouncementCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
     private final QAnnouncementEntity qAnnouncement = QAnnouncementEntity.announcementEntity;
-//    private final QSupplyScheduleEntity qSupplySchedule;
-//    private final QHouseComplexEntity qHouseComplex;
-//    private final QHouseComplexAttachmentEntity qHouseComplexAttachment;
-//    private final QReceptionEntity qReception;
-//    private final QEtcEntity qEtc;
 
     @Override
     public List<Announcement> findAnnouncements(AnnouncementRequest request) {
@@ -50,6 +45,15 @@ public class AnnouncementCustomRepositoryImpl implements AnnouncementCustomRepos
                 .fetch();
     }
 
+    @Override
+    public Long countAnnouncements(AnnouncementRequest request) {
+        return jpaQueryFactory
+                .select(qAnnouncement.count())
+                .from(qAnnouncement)
+                .where(ByRequestBooleanBuilder(request))
+                .fetchOne();
+    }
+
     private BooleanBuilder ByRequestBooleanBuilder(AnnouncementRequest request) {
         BooleanBuilder builder = new BooleanBuilder();
 
@@ -73,19 +77,18 @@ public class AnnouncementCustomRepositoryImpl implements AnnouncementCustomRepos
             builder.and(qAnnouncement.title.contains(request.getTitle()));
         }
 
-        if (StringUtils.hasLength(request.getCity())) {
-            builder.and(qAnnouncement.cityCode.eq(request.getCityCode()));
-        }
-
-        if (!request.getAnnouncementTypes().isEmpty()) {
-            builder.and(qAnnouncement.typeCode.in(request.getAnnounceTypesCodes()));
-        }
-
-        if (!request.getAnnouncementStatus().isEmpty()) {
-            builder.and(qAnnouncement.statusCode.in(request.getAnnounceStatusCodes()));
-        }
+//        if (StringUtils.hasLength(request.getCity())) {
+//            builder.and(qAnnouncement.cityCode.eq(request.getCityCode()));
+//        }
+//
+//        if (!request.getAnnouncementTypes().isEmpty()) {
+//            builder.and(qAnnouncement.typeCode.in(request.getAnnounceTypesCodes()));
+//        }
+//
+//        if (!request.getAnnouncementStatus().isEmpty()) {
+//            builder.and(qAnnouncement.statusCode.in(request.getAnnounceStatusCodes()));
+//        }
 
         return builder;
     }
-
 }

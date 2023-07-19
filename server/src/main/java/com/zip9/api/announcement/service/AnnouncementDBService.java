@@ -11,10 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,45 +33,41 @@ public class AnnouncementDBService implements AnnouncementReadService {
      */
     @Override
     @Transactional(readOnly = true)
-    public AnnouncementResponse getAnnouncements(AnnouncementRequest request) {
+    public AnnouncementsResponse getAnnouncements(AnnouncementRequest request) {
         // 공고 목록 조회
         List<Announcement> announcements = announcementRepository.findAnnouncements(request);
 
-        // 단지별 위치정보 셋팅
-        for (Announcement announcement : announcements) {
-            List<HouseComplexEntity> houseComplexEntities = houseComplexRepository.findAllByAnnouncementId(announcement.getId());
-
-            List<AnnouncementResponse.Position> positions = new ArrayList<>();
-
-            for (HouseComplexEntity houseComplex : houseComplexEntities) {
-                HouseComplexPositionEntity houseComplexPosition = houseComplexPositionRepository.findByHouseComplex(houseComplex);
-
-                Optional.of(houseComplexPosition).ifPresent(h -> {
-                    AnnouncementResponse.Position position = AnnouncementResponse.Position.buildFrom(h);
-                    positions.add(position);
-                });
-            }
-
-            announcement.setPositions(positions);
-        }
-
         // API Response 데이터 생성
-        AnnouncementResponse response = new AnnouncementResponse();
+        AnnouncementsResponse response = new AnnouncementsResponse();
 
         for (Announcement announcement : announcements) {
-            Map<String, Integer> numberOfAnnouncementsByCity = response.getMeta().getNumberOfAnnouncementsByCity();
+            // 단지별 위치정보 셋팅
+            announcement.setPositions(getPositions(announcement));
 
-            // 도시별 공고 추가
-            response.getItem().getAnnouncements().get(announcement.getCityShortName()).add(announcement);
-
-            // 도시별 공고수 증가
-            numberOfAnnouncementsByCity.put(
-                    announcement.getCityShortName(),
-                    numberOfAnnouncementsByCity.get(announcement.getCityShortName()) + 1
-            );
+            response.addAnnouncement(announcement);
         }
+
+        response.setTotal(announcementRepository.countAnnouncements(request));
 
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    List<Announcement.Position> getPositions(Announcement announcement) {
+        List<HouseComplexEntity> houseComplexEntities = houseComplexRepository.findAllByAnnouncementId(announcement.getId());
+
+        return houseComplexEntities.stream()
+                .map(houseComplex -> {
+                    HouseComplexPositionEntity houseComplexPosition = houseComplexPositionRepository.findByHouseComplex(houseComplex);
+
+                    return Announcement.Position.builder()
+                            .houseComplexName(houseComplex.getName())
+                            .address(houseComplexPosition.getRoadAddress())
+                            .x(houseComplexPosition.getX())
+                            .y(houseComplexPosition.getY())
+                            .build();
+                })
+                .toList();
     }
 
     /**

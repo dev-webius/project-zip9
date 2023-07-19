@@ -28,13 +28,14 @@ public class AnnouncementController {
 
     @Operation(summary = "공고 리스트 조회", description = "공고 리스트 조회")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementResponse.class))),
+            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementsResponse.class))),
             @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @GetMapping
-    public SuccessResponse<AnnouncementResponse> searchAnnouncements(@ParameterObject @Valid AnnouncementRequest announcementRequest) {
-        return SuccessResponse.of(service.getAnnouncements(announcementRequest));
+    public SuccessResponse<AnnouncementsResponse, Meta> searchAnnouncements(@ParameterObject @Valid AnnouncementRequest announcementRequest) {
+        AnnouncementsResponse announcements = service.getAnnouncements(announcementRequest);
+        return SuccessResponse.of(announcements, announcements.getMeta());
     }
 
     @Operation(summary = "공고 상세정보 조회", description = "공고 상세정보 조회")
@@ -45,7 +46,7 @@ public class AnnouncementController {
             @ApiResponse(responseCode = "404", description = "Requested resource is not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @GetMapping("/{announcementId}")
-    public SuccessResponse<AnnouncementDetailResponse> getAnnouncementDetail(@ParameterObject @Valid AnnouncementDetailRequest request) {
+    public SuccessResponse<AnnouncementDetailResponse, ?> getAnnouncementDetail(@ParameterObject @Valid AnnouncementDetailRequest request) {
         return SuccessResponse.of(service.getAnnouncementDetail(request));
     }
 

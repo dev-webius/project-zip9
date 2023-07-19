@@ -26,7 +26,7 @@ class AnnouncementDBServiceTest {
     void getAnnouncements_테스트() {
         LocalDate today = LocalDate.now();
 
-        AnnouncementResponse announcements = announcementDBService.getAnnouncements(AnnouncementRequest.builder()
+        AnnouncementsResponse announcements = announcementDBService.getAnnouncements(AnnouncementRequest.builder()
                 .registStartDate(LocalDate.parse("2023-07-04"))
                 .registEndDate(today)
 //                .closeStartDate(LocalDate.parse("2023-07-01"))
@@ -68,13 +68,13 @@ class AnnouncementDBServiceTest {
         // when-1
         StopWatch stopWatch1 = new StopWatch("OPEN_API_STOP_WATCH");
         stopWatch1.start("[START] - getAnnouncements");
-        AnnouncementResponse r1 = announcementOpenAPIService.getAnnouncements(request);
+        AnnouncementsResponse r1 = announcementOpenAPIService.getAnnouncements(request);
         stopWatch1.stop();
 
         // when-2
         StopWatch stopWatch2 = new StopWatch("DB_STOP_WATCH");
         stopWatch2.start("[START] - getAnnouncements");
-        AnnouncementResponse r2 = announcementDBService.getAnnouncements(request);
+        AnnouncementsResponse r2 = announcementDBService.getAnnouncements(request);
         stopWatch2.stop();
 
         // then
