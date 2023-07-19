@@ -115,4 +115,8 @@ public class AnnouncementEntity extends BaseTimeEntity {
         this.closedAt = LocalDateTime.of(lhAnnouncement.getCloseDate(), LocalTime.MAX);
         this.used = Boolean.TRUE;
     }
+
+    public void close() {
+        this.statusCode = AnnouncementStatus.CLOSED.name();
+    }
 }

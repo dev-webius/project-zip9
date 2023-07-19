@@ -7,7 +7,7 @@ import java.util.Arrays;
 public enum AnnouncementStatus {
     ANNOUNCED("공고중", "공고중"),
     ACCEPTABLE("접수중", "접수중"),
-//    CLOSED("접수마감", "접수마감"),
+    CLOSED("접수마감", "접수마감"),
 //    REQUEST_TO_CONTACT("상담요청", "상담요청"),
     ANNOUNCED_CORRECTLY("정정공고중", "정정공고중");
 

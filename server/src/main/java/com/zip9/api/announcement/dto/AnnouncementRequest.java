@@ -71,7 +71,7 @@ public class AnnouncementRequest {
     public AnnouncementRequest(LocalDate registStartDate, LocalDate registEndDate, String title, List<String> announcementTypes, List<String> announcementStatus, String city, LocalDate closeStartDate, LocalDate closeEndDate) {
         Assert.notNull(registStartDate, "시작일시가 입력되지 않았습니다.");
         Assert.notNull(registEndDate, "종료일시가 입력되지 않았습니다.");
-        Assert.isTrue(registStartDate.isBefore(registEndDate), "기간이 올바르지 않습니다.");
+        Assert.isTrue(!registStartDate.isAfter(registEndDate), "기간이 올바르지 않습니다.");
 
         this.registStartDate = registStartDate;
         this.registEndDate = registEndDate;

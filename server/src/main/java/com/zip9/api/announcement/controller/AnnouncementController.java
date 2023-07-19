@@ -1,9 +1,7 @@
 package com.zip9.api.announcement.controller;
 
-import com.zip9.api.announcement.dto.AnnouncementDetailRequest;
-import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
-import com.zip9.api.announcement.dto.AnnouncementRequest;
-import com.zip9.api.announcement.dto.AnnouncementResponse;
+import com.zip9.api.LH.service.ScheduleService;
+import com.zip9.api.announcement.dto.*;
 import com.zip9.api.announcement.service.AnnouncementDBService;
 import com.zip9.api.common.dto.ErrorResponse;
 import com.zip9.api.common.dto.SuccessResponse;
@@ -26,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AnnouncementController {
     private final AnnouncementDBService service;
+    private final ScheduleService scheduleService;
 
     @Operation(summary = "공고 리스트 조회", description = "공고 리스트 조회")
     @ApiResponses(value = {
@@ -48,6 +47,16 @@ public class AnnouncementController {
     @GetMapping("/{announcementId}")
     public SuccessResponse<AnnouncementDetailResponse> getAnnouncementDetail(@ParameterObject @Valid AnnouncementDetailRequest request) {
         return SuccessResponse.of(service.getAnnouncementDetail(request));
+    }
+
+    @Operation(summary = "공고 데이터 크롤링 스케쥴러 실행", description = "공고 데이터 크롤링 스케쥴러 실행")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementDetailResponse.class))),
+    })
+    @GetMapping("/scheduler")
+    public SuccessResponse<Boolean> runScheduler(@ParameterObject @Valid AnnouncementsCrawling request) {
+        return SuccessResponse.of(scheduleService.migration(request));
+
     }
 }
 

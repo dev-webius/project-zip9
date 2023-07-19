@@ -6,6 +6,7 @@ import com.zip9.api.LH.repository.RawDataRepository;
 import com.zip9.api.LH.service.LHService;
 import com.zip9.api.LH.service.ScheduleService;
 import com.zip9.api.announcement.dto.AnnouncementRequest;
+import com.zip9.api.announcement.dto.AnnouncementsCrawling;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,14 +26,13 @@ class ScheduleServiceTest {
     @Autowired
     RawDataRepository rawDataRepository;
 
-//    @Test
-//    void 공고조회_초기_마이그레이션_테스트() {
-//        scheduler.initialMigration();
-//    }
-
     @Test
     void 공고조회_마이그레이션_스케쥴러_테스트() {
-        scheduler.migration();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        scheduler.migration(AnnouncementsCrawling.builder()
+                .from(yesterday)
+                .to(yesterday)
+                .build());
     }
 
     @Test

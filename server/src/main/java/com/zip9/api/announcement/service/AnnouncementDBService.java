@@ -1,5 +1,6 @@
 package com.zip9.api.announcement.service;
 
+import com.zip9.api.LH.enums.AnnouncementStatus;
 import com.zip9.api.announcement.dto.*;
 import com.zip9.api.announcement.entity.*;
 import com.zip9.api.announcement.repository.*;
@@ -9,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -171,4 +173,12 @@ public class AnnouncementDBService implements AnnouncementReadService {
     public EtcEntity save(EtcEntity entity) {
         return etcRepository.save(entity);
     }
+
+    /**
+     * 마감 대상 공고 리스트 조회
+     */
+    public List<AnnouncementEntity> getNotClosedAnnouncements(LocalDateTime closedAt) {
+        return announcementRepository.findAllByStatusCodeNotAndClosedAtBefore(AnnouncementStatus.CLOSED.name(), closedAt);
+    }
+
 }

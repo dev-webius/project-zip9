@@ -6,6 +6,7 @@ import com.zip9.api.LH.enums.RawDataStatus;
 import com.zip9.api.LH.repository.RawDataRepository;
 import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
 import com.zip9.api.announcement.dto.AnnouncementRequest;
+import com.zip9.api.announcement.dto.AnnouncementsCrawling;
 import com.zip9.api.announcement.entity.*;
 import com.zip9.api.announcement.service.AnnouncementDBService;
 import com.zip9.api.announcement.service.AnnouncementOpenAPIService;
@@ -16,9 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +32,19 @@ public class ScheduleService {
 
     /**
      * 마이그레이션 스케쥴러
+     *
+     * ex)  2023-07-18 00:00:00 스케줄러 실행 시
+     *      2023-07-17 00:00:00 ~ 2023-07-17 23:59:59 대상
      */
     @Transactional(readOnly = false)
-    public void migration() {
+    public boolean migration(AnnouncementsCrawling request) {
         List<LHAnnouncementRequest> requests = AnnouncementRequest.builder()
-                .registStartDate(LocalDate.parse("2022-07-04"))
-                .registEndDate(LocalDate.parse("2023-07-04"))
+                .registStartDate(request.getFrom())
+                .registEndDate(request.getTo())
                 .build()
                 .buildLHRequests();
 
+        // STEP 1 - OPEN API RAW DATA 저장
         List<LHAnnouncementResponse> lhAnnouncements = requests.stream()
                 .map(lhService::searchAnnouncements)
                 .flatMap(List::stream)
@@ -50,14 +52,23 @@ public class ScheduleService {
                 .stream()
                 .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
                 .toList();
-
-        // STEP 1 - OPEN API RAW DATA 저장
         STEP_1(lhAnnouncements);
 
         // STEP 2 - RAW DATA를 DB 칼럼에 맞춰 입력
-        List<RawDataEntity> rawDataEntities = rawDataRepository.findAllByStatusEqualsIgnoreCaseAndCreatedAtAfter(RawDataStatus.STEP_1_COMPLETED.code, LocalDateTime.of(LocalDate.now(), LocalTime.MIN));
-
+        List<RawDataEntity> rawDataEntities = rawDataRepository.findAllByStatusEqualsIgnoreCaseAndCreatedAtAfter(RawDataStatus.STEP_1_COMPLETED.code, request.getFromDatetime());
         STEP_2(rawDataEntities);
+
+        // STEP 3 - 마감기간 지난 공고 마감 처리
+        List<AnnouncementEntity> notClosedAnnouncements = announcementDBService.getNotClosedAnnouncements(request.getFromDatetime());
+        STEP_3(notClosedAnnouncements);
+
+        return true;
+    }
+
+    private void STEP_3(List<AnnouncementEntity> notClosedAnnouncements) {
+        for (AnnouncementEntity announcement : notClosedAnnouncements) {
+            announcement.close();
+        }
     }
 
     private void STEP_2(List<RawDataEntity> rawDataEntities) {
@@ -183,38 +194,5 @@ public class ScheduleService {
                 ).toList();
 
         rawDataRepository.saveAll(rawDataEntities);
-    }
-
-
-    /**
-     * 최초 마이그레이션
-     */
-    @Transactional(readOnly = false)
-    public void initialMigration() {
-        // 공고등록일 2022-01-01 ~ 2023-12-31
-        // 공고마감일 오늘 이후
-        List<LHAnnouncementRequest> requests = AnnouncementRequest.builder()
-                .registStartDate(LocalDate.parse("2022-01-01"))
-                .registEndDate(LocalDate.parse("2023-07-12"))
-                .closeStartDate(LocalDate.now())
-                .build()
-                .buildLHRequests();
-
-        List<LHAnnouncementResponse> lhAnnouncements = requests.stream()
-                .map(lhService::searchAnnouncements)
-                .flatMap(List::stream)
-                .toList()
-                .stream()
-                .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
-                .toList();
-
-        lhAnnouncements.forEach(this::save);
-    }
-
-    private AnnouncementEntity save(LHAnnouncementResponse lhAnnouncement) {
-        return announcementDBService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
-                .lhAnnouncement(lhAnnouncement)
-                .build()
-        );
     }
 }

@@ -52,8 +52,14 @@ public class AnnouncementCustomRepositoryImpl implements AnnouncementCustomRepos
 
     private BooleanBuilder ByRequestBooleanBuilder(AnnouncementRequest request) {
         BooleanBuilder builder = new BooleanBuilder();
-        builder.and(qAnnouncement.announcedAt.goe(LocalDateTime.of(request.getRegistStartDate(), LocalTime.MIN)));
-        builder.and(qAnnouncement.announcedAt.loe(LocalDateTime.of(request.getRegistEndDate(), LocalTime.MAX)));
+
+        if (ObjectUtils.isNotEmpty(request.getRegistStartDate())) {
+            builder.and(qAnnouncement.announcedAt.goe(LocalDateTime.of(request.getRegistStartDate(), LocalTime.MIN)));
+        }
+
+        if (ObjectUtils.isNotEmpty(request.getRegistEndDate())) {
+            builder.and(qAnnouncement.announcedAt.loe(LocalDateTime.of(request.getRegistEndDate(), LocalTime.MAX)));
+        }
 
         if (ObjectUtils.isNotEmpty(request.getCloseStartDate())) {
             builder.and(qAnnouncement.closedAt.goe(LocalDateTime.of(request.getCloseStartDate(), LocalTime.MIN)));
