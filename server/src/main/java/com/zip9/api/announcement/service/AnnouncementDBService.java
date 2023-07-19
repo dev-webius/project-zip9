@@ -28,11 +28,13 @@ public class AnnouncementDBService implements AnnouncementReadService {
     private SupplyScheduleRepository supplyScheduleRepository;
     private ReceptionRepository receptionRepository;
     private EtcRepository etcRepository;
+    private QualificationRepository qualificationRepository;
 
     /**
      * 공고 목록 조회
      */
     @Override
+    @Transactional(readOnly = true)
     public AnnouncementResponse getAnnouncements(AnnouncementRequest request) {
         // 공고 목록 조회
         List<Announcement> announcements = announcementRepository.findAnnouncements(request);
@@ -82,11 +84,14 @@ public class AnnouncementDBService implements AnnouncementReadService {
         AnnouncementEntity announcement = announcementRepository.findById(request.getAnnouncementId()).orElseThrow(() -> new GeneralException(Code.NOT_FOUND));
         ReceptionEntity receptionEntity = receptionRepository.findByAnnouncement(announcement);
         EtcEntity etcEntity = etcRepository.findByAnnouncement(announcement);
+        List<QualificationEntity> qualificationEntities = qualificationRepository.findAllByAnnouncement(announcement);
         List<SupplyScheduleEntity> supplyScheduleEntities = supplyScheduleRepository.findAllByAnnouncement(announcement);
         List<HouseComplexEntity> houseComplexEntities = houseComplexRepository.findAllByAnnouncement(announcement);
 
         AnnouncementDetailResponse.Reception reception = AnnouncementDetailResponse.Reception.buildFrom(receptionEntity);
         AnnouncementDetailResponse.Etc etc = AnnouncementDetailResponse.Etc.buildFrom(etcEntity);
+
+        List<AnnouncementDetailResponse.Qualification> qualifications = qualificationEntities.stream().map(AnnouncementDetailResponse.Qualification::buildFrom).toList();
         List<AnnouncementDetailResponse.SupplySchedule> supplySchedules = supplyScheduleEntities.stream().map(AnnouncementDetailResponse.SupplySchedule::buildFrom).toList();
         List<AnnouncementDetailResponse.HouseComplex> houseComplexes = houseComplexEntities.stream().map(AnnouncementDetailResponse.HouseComplex::buildFrom).toList();
 
@@ -106,6 +111,7 @@ public class AnnouncementDBService implements AnnouncementReadService {
                         .build())
                 .etc(etc)
                 .reception(reception)
+                .qualifications(qualifications)
                 .build()
         ;
     }
@@ -175,8 +181,17 @@ public class AnnouncementDBService implements AnnouncementReadService {
     }
 
     /**
+     * 공고 상세 - 신청자격 저장
+     */
+    @Transactional(readOnly = false)
+    public QualificationEntity save(QualificationEntity entity) {
+        return qualificationRepository.save(entity);
+    }
+
+    /**
      * 마감 대상 공고 리스트 조회
      */
+    @Transactional(readOnly = true)
     public List<AnnouncementEntity> getNotClosedAnnouncements(LocalDateTime closedAt) {
         return announcementRepository.findAllByStatusCodeNotAndClosedAtBefore(AnnouncementStatus.CLOSED.name(), closedAt);
     }

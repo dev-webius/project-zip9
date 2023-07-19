@@ -99,6 +99,14 @@ public class ScheduleService {
                     .build()
             );
 
+            // 신청자격 저장
+            for (AnnouncementDetailResponse.Qualification qualification : announcementDetail.getQualifications()) {
+                announcementDBService.save(QualificationEntity.ByAnnouncementDetailQualificationBuilder()
+                        .qualification(qualification)
+                        .announcement(announcementEntity)
+                        .build());
+            }
+
             // 공급일정 저장
             for (AnnouncementDetailResponse.SupplySchedule supplySchedule : announcementDetail.getSupplySchedules()) {
                 announcementDBService.save(SupplyScheduleEntity.ByAnnouncementDetailSupplyScheduleBuilder()

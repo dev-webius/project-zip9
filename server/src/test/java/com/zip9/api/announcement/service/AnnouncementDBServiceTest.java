@@ -24,9 +24,11 @@ class AnnouncementDBServiceTest {
 
     @Test
     void getAnnouncements_테스트() {
+        LocalDate today = LocalDate.now();
+
         AnnouncementResponse announcements = announcementDBService.getAnnouncements(AnnouncementRequest.builder()
                 .registStartDate(LocalDate.parse("2023-07-04"))
-                .registEndDate(LocalDate.parse("2023-07-10"))
+                .registEndDate(today)
 //                .closeStartDate(LocalDate.parse("2023-07-01"))
 //                .closeEndDate(LocalDate.parse("2023-07-30"))
 //                .city(City.GYEONGGI.name())

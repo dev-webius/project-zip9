@@ -455,7 +455,7 @@ public class LHAnnouncementDetailResponse {
             @JsonProperty("PAN_ETC_INF_CD_NM")
             private String qualificationTypeName;
             @JsonProperty("ETC_CTS")
-            private String description;
+            private String requirement;
         }
 
         @Getter
@@ -463,7 +463,7 @@ public class LHAnnouncementDetailResponse {
             @JsonProperty("PAN_ETC_INF_CD_NM")
             private String qualificationTypeName;
             @JsonProperty("ETC_CTS")
-            private String description;
+            private String requirement;
         }
     }
 

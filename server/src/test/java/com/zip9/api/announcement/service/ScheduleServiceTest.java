@@ -29,9 +29,11 @@ class ScheduleServiceTest {
     @Test
     void 공고조회_마이그레이션_스케쥴러_테스트() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate today = LocalDate.now();
+
         scheduler.migration(AnnouncementsCrawling.builder()
-                .from(yesterday)
-                .to(yesterday)
+                .from(LocalDate.parse("2023-07-01"))
+                .to(LocalDate.parse("2023-07-07"))
                 .build());
     }
 

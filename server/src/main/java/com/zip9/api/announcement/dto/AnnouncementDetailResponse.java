@@ -30,6 +30,8 @@ public class AnnouncementDetailResponse {
     private Reception reception;
     @Schema(description = "공고 첨부파일")
     private List<Attachment> attachments;
+    @Schema(description = "신청자격")
+    private List<Qualification> qualifications;
     @Schema(description = "기타")
     private Etc etc;
 
@@ -374,6 +376,26 @@ public class AnnouncementDetailResponse {
                     .numberOfSupplyHousehold(etcEntity.getNumberOfSupplyHousehold())
                     .receptionAddress(etcEntity.getReceptionAddress())
                     .groupHomeAgency(etcEntity.getGroupHomeAgency())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Qualification {
+        @Builder.Default
+        @Schema(description = "신청자격 구분명")
+        private String qualificationTypeName = "";
+        @Builder.Default
+        @Schema(description = "신청자격 세부자격요건")
+        private String requirement = "";
+
+        public static Qualification buildFrom(QualificationEntity qualificationEntity) {
+            return Qualification.builder()
+                    .qualificationTypeName(qualificationEntity.getQualificationTypeName())
+                    .requirement(qualificationEntity.getRequirement())
                     .build();
         }
     }

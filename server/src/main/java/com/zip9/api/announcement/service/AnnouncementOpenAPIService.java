@@ -152,7 +152,18 @@ public class AnnouncementOpenAPIService implements AnnouncementReadService {
                 .reception(buildReceptionFrom(lhDetail))
                 .attachments(buildAttachmentsFrom(lhDetail))
                 .etc(buildEtcFrom(lhDetail))
+                .qualifications(buildQualificationsFrom(lhDetail))
                 .build();
+    }
+
+    private List<AnnouncementDetailResponse.Qualification> buildQualificationsFrom(LHAnnouncementDetailResponse lhDetail) {
+        return lhDetail.getQualifications().getValues().stream()
+                .map(lhDetailQualification -> AnnouncementDetailResponse.Qualification.builder()
+                        .qualificationTypeName(lhDetailQualification.getQualificationTypeName())
+                        .requirement(lhDetailQualification.getRequirement())
+                        .build()
+                )
+                .toList();
     }
 
     private List<AnnouncementDetailResponse.Attachment> buildAttachmentsFrom(LHAnnouncementDetailResponse lhDetail) {
