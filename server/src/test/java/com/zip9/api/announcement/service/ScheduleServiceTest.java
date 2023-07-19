@@ -1,19 +1,14 @@
 package com.zip9.api.announcement.service;
 
-import com.zip9.api.LH.dto.LHAnnouncementRequest;
-import com.zip9.api.LH.dto.LHAnnouncementResponse;
 import com.zip9.api.LH.repository.RawDataRepository;
 import com.zip9.api.LH.service.LHService;
 import com.zip9.api.LH.service.ScheduleService;
-import com.zip9.api.announcement.dto.AnnouncementRequest;
-import com.zip9.api.announcement.dto.AnnouncementsCrawling;
+import com.zip9.api.announcement.dto.AnnouncementsMigrationRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
 
 @SpringBootTest
 class ScheduleServiceTest {
@@ -31,32 +26,10 @@ class ScheduleServiceTest {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         LocalDate today = LocalDate.now();
 
-        scheduler.migration(AnnouncementsCrawling.builder()
-                .from(LocalDate.parse("2023-07-01"))
-                .to(LocalDate.parse("2023-07-07"))
+        scheduler.migration(AnnouncementsMigrationRequest.builder()
+                .from(LocalDate.parse("2023-07-06"))
+                .to(LocalDate.parse("2023-07-08"))
                 .build());
-    }
-
-    @Test
-    void Date_to_Datetime_테스트() {
-        List<LHAnnouncementRequest> requests = AnnouncementRequest.builder()
-                .registStartDate(LocalDate.parse("2023-07-01"))
-                .registEndDate(LocalDate.parse("2023-07-04"))
-                .build().buildLHRequests();
-
-        List<LHAnnouncementResponse> announcements = requests.stream()
-                .map(request -> lhService.searchAnnouncements(request))
-                .flatMap(List::stream)
-                .toList()
-                .stream()
-                .sorted(Comparator.comparing(LHAnnouncementResponse::getRegistDate).reversed())
-                .toList();
-
-//        List<LocalDateTime> localDateTimes = announcements.stream().map(announcement -> LocalDateTime.of(announcement.getRegistDate(), LocalTime.MIN)).toList();
-//        List<LocalDateTime> localDateTimes1 = announcements.stream().map(announcement -> LocalDateTime.of(announcement.getCloseDate(), LocalTime.MIN)).toList();
-//        List<LocalDateTime> localDateTimes2 = announcements.stream().map(announcement -> LocalDateTime.of(announcement.getAnnouncementDate(), LocalTime.MIN)).toList();
-
-        assert true;
     }
 
 }

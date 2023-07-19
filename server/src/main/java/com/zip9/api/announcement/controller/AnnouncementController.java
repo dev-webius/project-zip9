@@ -55,7 +55,7 @@ public class AnnouncementController {
             @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementDetailResponse.class))),
     })
     @GetMapping("/scheduler")
-    public SuccessResponse<Boolean> runScheduler(@ParameterObject @Valid AnnouncementsCrawling request) {
+    public SuccessResponse<Boolean, ?> runScheduler(@ParameterObject @Valid AnnouncementsMigrationRequest request) {
         return SuccessResponse.of(scheduleService.migration(request));
 
     }

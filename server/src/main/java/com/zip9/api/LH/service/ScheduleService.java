@@ -5,8 +5,7 @@ import com.zip9.api.LH.entity.RawDataEntity;
 import com.zip9.api.LH.enums.RawDataStatus;
 import com.zip9.api.LH.repository.RawDataRepository;
 import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
-import com.zip9.api.announcement.dto.AnnouncementRequest;
-import com.zip9.api.announcement.dto.AnnouncementsCrawling;
+import com.zip9.api.announcement.dto.AnnouncementsMigrationRequest;
 import com.zip9.api.announcement.entity.*;
 import com.zip9.api.announcement.service.AnnouncementDBService;
 import com.zip9.api.announcement.service.AnnouncementOpenAPIService;
@@ -37,12 +36,8 @@ public class ScheduleService {
      *      2023-07-17 00:00:00 ~ 2023-07-17 23:59:59 대상
      */
     @Transactional(readOnly = false)
-    public boolean migration(AnnouncementsCrawling request) {
-        List<LHAnnouncementRequest> requests = AnnouncementRequest.builder()
-                .registStartDate(request.getFrom())
-                .registEndDate(request.getTo())
-                .build()
-                .buildLHRequests();
+    public boolean migration(AnnouncementsMigrationRequest request) {
+        List<LHAnnouncementRequest> requests = request.buildLHRequests();
 
         // STEP 1 - OPEN API RAW DATA 저장
         List<LHAnnouncementResponse> lhAnnouncements = requests.stream()
