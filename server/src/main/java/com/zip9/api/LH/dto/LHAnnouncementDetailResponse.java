@@ -313,10 +313,6 @@ public class LHAnnouncementDetailResponse {
             private String houseBrowseEndDate = "";
         }
 
-        public Label getLabel() {
-            return labels.stream().findFirst().orElse(new Label());
-        }
-
         public static Boolean existTargetOf(String houseSupplyTypeCode) {
             return Stream.of(HouseSupplyType.PRE_SALE_HOUSE, HouseSupplyType.PUBLIC_RENTAL_FOR_5_OR_10_YEARS, HouseSupplyType.HOME_BASED_CHILDCARE_CENTER, HouseSupplyType.NEWLYWEDS)
                     .anyMatch(type -> type.code.equals(houseSupplyTypeCode));

@@ -12,8 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -75,39 +73,27 @@ public class AnnouncementDBService implements AnnouncementReadService {
      */
     @Override
     public AnnouncementDetailResponse getAnnouncementDetail(AnnouncementDetailRequest request) {
-        AnnouncementEntity announcement = announcementRepository.findById(request.getAnnouncementId()).orElseThrow(() -> new GeneralException(Code.NOT_FOUND));
-        ReceptionEntity receptionEntity = receptionRepository.findByAnnouncement(announcement);
-        EtcEntity etcEntity = etcRepository.findByAnnouncement(announcement);
-        List<QualificationEntity> qualificationEntities = qualificationRepository.findAllByAnnouncement(announcement);
-        List<SupplyScheduleEntity> supplyScheduleEntities = supplyScheduleRepository.findAllByAnnouncement(announcement);
-        List<HouseComplexEntity> houseComplexEntities = houseComplexRepository.findAllByAnnouncement(announcement);
+        AnnouncementEntity announcementEntity = announcementRepository.findById(request.getAnnouncementId()).orElseThrow(() -> new GeneralException(Code.NOT_FOUND));
+
+        ReceptionEntity receptionEntity = receptionRepository.findByAnnouncement(announcementEntity);
+        EtcEntity etcEntity = etcRepository.findByAnnouncement(announcementEntity);
+        List<QualificationEntity> qualificationEntities = qualificationRepository.findAllByAnnouncement(announcementEntity);
+        List<SupplyScheduleEntity> supplyScheduleEntities = supplyScheduleRepository.findAllByAnnouncement(announcementEntity);
+        List<HouseComplexEntity> houseComplexEntities = houseComplexRepository.findAllByAnnouncement(announcementEntity);
 
         AnnouncementDetailResponse.Reception reception = AnnouncementDetailResponse.Reception.buildFrom(receptionEntity);
         AnnouncementDetailResponse.Etc etc = AnnouncementDetailResponse.Etc.buildFrom(etcEntity);
-
         List<AnnouncementDetailResponse.Qualification> qualifications = qualificationEntities.stream().map(AnnouncementDetailResponse.Qualification::buildFrom).toList();
         List<AnnouncementDetailResponse.SupplySchedule> supplySchedules = supplyScheduleEntities.stream().map(AnnouncementDetailResponse.SupplySchedule::buildFrom).toList();
         List<AnnouncementDetailResponse.HouseComplex> houseComplexes = houseComplexEntities.stream().map(AnnouncementDetailResponse.HouseComplex::buildFrom).toList();
 
-        Map<String, AnnouncementDetailResponse.HouseComplex> houseComplexesMap = houseComplexes.stream()
-                .collect(
-                        Collectors.toMap(
-                                AnnouncementDetailResponse.HouseComplex::getNameOrDetailAddress,
-                                houseComplex -> houseComplex
-                        )
-                );
-
         return AnnouncementDetailResponse.builder()
                 .supplySchedules(supplySchedules)
-                .houseComplexes(AnnouncementDetailResponse.HouseComplexes.builder()
-                        .names(houseComplexesMap.keySet().stream().toList())
-                        .map(houseComplexesMap)
-                        .build())
+                .houseComplexes(houseComplexes)
                 .etc(etc)
                 .reception(reception)
                 .qualifications(qualifications)
-                .build()
-        ;
+                .build();
     }
 
     /**

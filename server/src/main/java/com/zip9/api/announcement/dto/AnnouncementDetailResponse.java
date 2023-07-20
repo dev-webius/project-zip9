@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zip9.api.LH.dto.LHAnnouncementDetailResponse;
 import com.zip9.api.LH.dto.LHAnnouncementSupplyInfoResponse;
 import com.zip9.api.announcement.entity.*;
+import com.zip9.api.common.util.BizStringUtlls;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -24,16 +25,19 @@ import java.util.Map;
 public class AnnouncementDetailResponse {
     @Schema(description = "공급일정")
     private List<SupplySchedule> supplySchedules;
+//    private HouseComplexes houseComplexes;
     @Schema(description = "단지정보")
-    private HouseComplexes houseComplexes;
+    private List<HouseComplex> houseComplexes;
     @Schema(description = "접수처 정보")
     private Reception reception;
-    @Schema(description = "공고 첨부파일")
-    private List<Attachment> attachments;
     @Schema(description = "신청자격")
     private List<Qualification> qualifications;
     @Schema(description = "기타")
     private Etc etc;
+
+    @Schema(description = "공고 첨부파일")
+    @JsonIgnore
+    private List<Attachment> attachments;
 
     @Getter
     @Builder
@@ -86,6 +90,7 @@ public class AnnouncementDetailResponse {
         private String supplyInfoGuide = "";
         @Builder.Default
         @Schema(description = "첨부파일")
+        @JsonIgnore
         private List<Attachment> attachments = new ArrayList<>();
         @Builder.Default
         @Schema(description = "주택유형")
@@ -183,19 +188,23 @@ public class AnnouncementDetailResponse {
         @Schema(description = "월임대료(기타)")
         private String rentFeeEtc = "";
 
-        public static HouseType buildFrom(LHAnnouncementSupplyInfoResponse.Value lhHouseSupplyInfoValue) {
-            return HouseType.builder()
-                    .houseTypeName(lhHouseSupplyInfoValue.getHouseTypeName())
-                    .supplyArea(lhHouseSupplyInfoValue.getSupplyArea())
-                    .netLeasableArea(lhHouseSupplyInfoValue.getNetLeasableArea())
-                    .numberOfHousehold(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfHousehold(), 0))
-                    .numberOfSupplyHousehold(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfSupplyHousehold(), 0))
-                    .numberOfApplicants(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfApplicants(), 0))
-                    .numberOfCandidates(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfCandidates(), 0))
-                    .amount(lhHouseSupplyInfoValue.getAmount())
-                    .rentFee(lhHouseSupplyInfoValue.getRentFee())
-                    .rentFeeEtc(lhHouseSupplyInfoValue.getRentFeeEtc())
-                    .build();
+        public static List<HouseType> buildFrom(LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseComplexName) {
+            return lhSupplyInfo.getValues().stream()
+                    .filter(lhSupplyInfoValue -> BizStringUtlls.isEqualsIgnoringWhitespaces(lhSupplyInfoValue.getHouseComplexName(), houseComplexName))
+                    .map(lhHouseSupplyInfoValue -> HouseType.builder()
+                            .houseTypeName(lhHouseSupplyInfoValue.getHouseTypeName())
+                            .supplyArea(lhHouseSupplyInfoValue.getSupplyArea())
+                            .netLeasableArea(lhHouseSupplyInfoValue.getNetLeasableArea())
+                            .numberOfHousehold(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfHousehold(), 0))
+                            .numberOfSupplyHousehold(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfSupplyHousehold(), 0))
+                            .numberOfApplicants(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfApplicants(), 0))
+                            .numberOfCandidates(NumberUtils.toInt(lhHouseSupplyInfoValue.getNumberOfCandidates(), 0))
+                            .amount(lhHouseSupplyInfoValue.getAmount())
+                            .rentFee(lhHouseSupplyInfoValue.getRentFee())
+                            .rentFeeEtc(lhHouseSupplyInfoValue.getRentFeeEtc())
+                            .build()
+                    )
+                    .toList();
         }
 
         public static HouseType buildFrom(HouseTypeEntity houseTypeEntity) {
@@ -318,6 +327,21 @@ public class AnnouncementDetailResponse {
                     .receptionGuide(receptionEntity.getReceptionGuide())
                     .build();
         }
+
+        public static Reception buildFrom(LHAnnouncementDetailResponse.Reception lhReception) {
+            return lhReception.getValues().stream()
+                    .map(lhReceptionValue ->
+                            Reception.builder()
+                                    .address(lhReceptionValue.getAddress())
+                                    .telephoneNumber(lhReceptionValue.getTelephoneNumber())
+                                    .operationTerm(BizStringUtlls.makeTermValueFrom(lhReceptionValue.getOpenDate(), lhReceptionValue.getCloseDate()))
+                                    .scheduleGuide(lhReceptionValue.getScheduleGuide())
+                                    .receptionGuide(lhReceptionValue.getReceptionGuide())
+                                    .build()
+                    )
+                    .findAny()
+                    .orElse(new Reception());
+        }
     }
 
     @Getter
@@ -378,6 +402,27 @@ public class AnnouncementDetailResponse {
                     .groupHomeAgency(etcEntity.getGroupHomeAgency())
                     .build();
         }
+
+        public static Etc buildFrom(LHAnnouncementDetailResponse.Etc etc) {
+            return etc.getValues().stream()
+                    .map(lhEtcValue -> Etc.builder()
+                            .announcementDescription(lhEtcValue.getAnnouncementDescription())
+                            .comment(lhEtcValue.getComment())
+                            .groupHomeAgency(lhEtcValue.getGroupHomeAgency())
+                            .correctOrCancelReason(lhEtcValue.getCorrectOrCancelReason())
+                            .targetArea(lhEtcValue.getTargetArea())
+                            .targetHouse(lhEtcValue.getTargetHouse())
+                            .leaseTerms(lhEtcValue.getLeaseTerms())
+                            .leaseCondition(lhEtcValue.getLeaseCondition())
+                            .caution(lhEtcValue.getCaution())
+                            .supportLimitAmount(NumberUtils.toInt(lhEtcValue.getSupportLimitAmount(), 0))
+                            .numberOfSupplyHousehold(NumberUtils.toInt(lhEtcValue.getNumberOfSupplyHousehold(), 0))
+                            .receptionAddress(lhEtcValue.getReceptionAddress())
+                            .build()
+                    )
+                    .findAny()
+                    .orElse(new Etc());
+        }
     }
 
     @Getter
@@ -397,6 +442,16 @@ public class AnnouncementDetailResponse {
                     .qualificationTypeName(qualificationEntity.getQualificationTypeName())
                     .requirement(qualificationEntity.getRequirement())
                     .build();
+        }
+
+        public static List<Qualification> buildFrom(LHAnnouncementDetailResponse.Qualification lhQualifications) {
+            return lhQualifications.getValues().stream()
+                    .map(lhDetailQualification -> AnnouncementDetailResponse.Qualification.builder()
+                            .qualificationTypeName(lhDetailQualification.getQualificationTypeName())
+                            .requirement(lhDetailQualification.getRequirement())
+                            .build()
+                    )
+                    .toList();
         }
     }
 }
