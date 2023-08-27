@@ -1,0 +1,44 @@
+@import "./function";
+
+@import "../variant/color";
+@import "../variant/text";
+
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+
+  @include text-default;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  font: inherit;
+  background-color: transparent;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+p {
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#map {
+  flex: 1;
+}

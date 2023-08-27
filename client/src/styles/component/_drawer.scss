@@ -1,0 +1,41 @@
+.drawer {
+  position: absolute;
+  visibility: visible;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 100px;
+  background-color: $color-white-dimm;
+  border-radius: rem(24px) rem(24px) 0 0;
+
+  padding-top: rem(40px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: rem(16px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: rem(34px);
+    height: rem(4px);
+    border-radius: rem(100px);
+    background-color: $color-dimm;
+  }
+
+  &__text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    @include text-alias(medium-16);
+    color: $color-gray-90;
+    text-align: center;
+
+    &--bold {
+      @include text-alias(semibold-17);
+      margin: 0 rem(8px);
+    }
+  }
+}

@@ -1,0 +1,21 @@
+$search-icon: '../icons/search.svg';
+
+.search-box {
+  flex: 1;
+  background: $color-dimm url($search-icon) no-repeat 16px center/18px 18px;
+  border-radius: rem(16px);
+  padding: rem(12px) rem(16px) rem(12px) rem(40px);
+
+  &__input {
+    @include text-alias(regular-17);
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    color: $color-black;
+
+    &::placeholder {
+      color: $color-gray-60;
+    }
+  }
+}

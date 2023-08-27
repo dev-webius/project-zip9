@@ -1,0 +1,53 @@
+@use "sass:map";
+
+$text-family: (
+  // "name": weight size height letter
+  "regular-1": 400 17px 22px -0.4px,
+  "regular-2": 400 15px 20px -0.4px,
+  "regular-3": 400 13px 16px 0px,
+  "medium-1": 400 16px 22px -0.4px,
+  "medium-2": 500 13px 16px 0px,
+  "semibold-1": 600 20px 20px 0px,
+  "semibold-2": 600 17px 22px -0.4px,
+  "semibold-3": 600 14px 14px 0px,
+  "semibold-4": 600 12px 14px 0px,
+  "bold": 700 26px 31px 0px,
+);
+
+$text-family-alias: (
+  // "name": weight size height letter
+  "regular-17": "regular-1",
+  "regular-15": "regular-2",
+  "regular-13": "regular-3",
+  "medium-16": "medium-1",
+  "medium-13": "medium-2",
+  "semibold-20": "semibold-1",
+  "semibold-17": "semibold-2",
+  "semibold-14": "semibold-3",
+  "semibold-12": "semibold-4",
+  "bold-26": "bold-1",
+);
+
+@mixin text($level) {
+  $level: map.get($text-family, $level);
+
+  $font-weight: nth($level, 1);
+  $font-size: nth($level, 2);
+  $line-height: nth($level, 3);
+  $letter-spacing: nth($level, 4);
+
+  font-size: $font-size;
+  font-weight: $font-weight;
+  line-height: $line-height;
+  letter-spacing: $letter-spacing;
+}
+
+@mixin text-alias($level-alias) {
+  $level: map.get($text-family-alias, $level-alias);
+
+  @include text($level);
+}
+
+@mixin text-default {
+  font-family: 'Pretendard', sans-serif;
+}

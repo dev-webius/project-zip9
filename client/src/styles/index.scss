@@ -1,0 +1,9 @@
+@import "common/reset";
+
+body {
+  @import "component/searchbox";
+  @import "component/drawer";
+  @import "component/list";
+}
+
+@import "lib/mui/index";

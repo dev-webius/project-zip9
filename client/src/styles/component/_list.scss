@@ -1,0 +1,127 @@
+$caret-arrow-icon: '../icons/caret-arrow.grey.svg';
+
+.location {
+  &__list {
+    &__button {
+      position: relative;
+      padding: rem(20px) rem(40px) rem(20px) rem(24px);
+  
+      background: url($caret-arrow-icon) no-repeat calc(100% - rem(24px)) center/rem(8px) rem(12px);
+  
+      &::after {
+        content: '';
+        position: absolute;
+        left: rem(24px);
+        right: 0;
+        bottom: 0;
+        border-bottom: 1px solid $color-black-dimm;
+      }
+    }
+
+    &__item {
+      display: flex;
+      width: 100%;
+      align-items: center;
+
+      @include text-default;
+      @include text-alias('regular-17');
+      justify-content: flex-start;
+      
+      &__label {}
+  
+      &__count {
+        margin-left: auto;
+        color: $color-gray-60;
+      }
+    }
+  }
+}
+
+.announcement {
+  &__list {
+    &__button {
+      position: relative;
+      padding: rem(16px) rem(24px);
+    }
+
+    &__item {
+      width: 100%;
+
+      display: flex;
+      align-items: center;
+
+      &__thumb {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        @include text-default;
+        @include text-alias('semibold-20');
+        width: rem(54px);
+        height: rem(54px);
+        margin-right: rem(18px);
+        border-radius: rem(16px);
+
+        &--public {
+          color: #fff;
+          background-color: $color-red;
+        }
+
+        &--people {
+          color: #fff;
+          background-color: $color-yellow;
+        }
+      }
+
+      &__text {
+        width: 100%;
+        text-align: left;
+      }
+
+      &__location {
+        display: flex;
+        align-items: center;
+        @include text-default;
+        @include text-alias('semibold-17');
+        color: $color-gray-90;
+      }
+
+      &__mark {
+        @include text-default;
+        @include text-alias('semibold-12');
+        margin-left: rem(6px);
+        padding: rem(5px) rem(8px);
+        border-radius: rem(6px);
+
+        &--info {
+          color: $color-gray-70;
+          background-color: $color-gray-20;
+        }
+
+        &--public {
+          color: $color-red;
+          background-color: $color-red-bg;
+        }
+
+        &--people {
+          color: $color-yellow;
+          background-color: $color-yellow-bg;
+        }
+      }
+
+      &__description {
+        @include text-default;
+        @include text-alias('regular-13');
+        color: $color-gray-70;
+      }
+
+      &__metadata {
+        display: flex;
+        align-items: center;
+        @include text-default;
+        @include text-alias('medium-13');
+        color: $color-gray-70;
+      }
+    }
+  }
+}
