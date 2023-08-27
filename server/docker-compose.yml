@@ -1,0 +1,7 @@
+version: "3.2"
+services:
+  application:
+    container_name: zip9-api
+    build: .
+    ports:
+      - "8080:8080"
