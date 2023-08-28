@@ -13,6 +13,8 @@ import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "TB_ANNOUNCEMENT", indexes = {
         @Index(name = "UDX_ANNOUNCEMENT_01", columnList = "THIRD_PARTY_ANNOUNCEMENT_ID", unique = true),
@@ -78,6 +80,9 @@ public class AnnouncementEntity extends BaseTimeEntity {
     @Column(name = "USED", nullable = false)
     @Comment("사용여부")
     private Boolean used;
+
+    @OneToMany(mappedBy = "announcement", fetch = FetchType.LAZY)
+    private List<HouseComplexEntity> houseComplexes = new ArrayList<>();
 
     @Builder(builderMethodName = "ByLHAnnouncementBuilder")
     public AnnouncementEntity(LHAnnouncementResponse lhAnnouncement) {

@@ -1,10 +1,9 @@
 package com.zip9.api.announcement.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.zip9.api.announcement.dto.Announcement;
 import com.zip9.api.announcement.dto.AnnouncementRequest;
+import com.zip9.api.announcement.entity.AnnouncementEntity;
 import com.zip9.api.announcement.entity.QAnnouncementEntity;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
@@ -22,23 +21,8 @@ public class AnnouncementCustomRepositoryImpl implements AnnouncementCustomRepos
     private final QAnnouncementEntity qAnnouncement = QAnnouncementEntity.announcementEntity;
 
     @Override
-    public List<Announcement> findAnnouncements(AnnouncementRequest request) {
-        return jpaQueryFactory.select(
-                Projections.constructor(
-                        Announcement.class,
-                        qAnnouncement.id,
-                        qAnnouncement.thirdPartyId,
-                        qAnnouncement.title,
-                        qAnnouncement.statusCode, /*ENUM*/
-                        qAnnouncement.typeCode, /*ENUM*/
-                        qAnnouncement.detailTypeCode, /*ENUM*/
-                        qAnnouncement.cityCode,  /*ENUM*/
-                        qAnnouncement.detailUrl,
-                        qAnnouncement.detailUrlMobile,
-                        qAnnouncement.announcedAt,
-                        qAnnouncement.closedAt,
-                        qAnnouncement.supplyTypeCode /*ENUM*/
-                ))
+    public List<AnnouncementEntity> findAnnouncements(AnnouncementRequest request) {
+        return jpaQueryFactory.select(qAnnouncement)
                 .from(qAnnouncement)
                 .where(ByRequestBooleanBuilder(request))
                 .orderBy(qAnnouncement.announcedAt.desc())

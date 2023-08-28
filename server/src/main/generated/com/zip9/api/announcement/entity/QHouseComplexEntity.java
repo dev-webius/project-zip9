@@ -43,6 +43,8 @@ public class QHouseComplexEntity extends EntityPathBase<HouseComplexEntity> {
 
     public final StringPath heatingTypeName = createString("heatingTypeName");
 
+    public final QHouseComplexPositionEntity houseComplexPositionEntity;
+
     public final ListPath<HouseTypeEntity, QHouseTypeEntity> houseTypes = this.<HouseTypeEntity, QHouseTypeEntity>createList("houseTypes", HouseTypeEntity.class, QHouseTypeEntity.class, PathInits.DIRECT2);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -79,6 +81,7 @@ public class QHouseComplexEntity extends EntityPathBase<HouseComplexEntity> {
     public QHouseComplexEntity(Class<? extends HouseComplexEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.announcement = inits.isInitialized("announcement") ? new QAnnouncementEntity(forProperty("announcement")) : null;
+        this.houseComplexPositionEntity = inits.isInitialized("houseComplexPositionEntity") ? new QHouseComplexPositionEntity(forProperty("houseComplexPositionEntity"), inits.get("houseComplexPositionEntity")) : null;
     }
 
 }

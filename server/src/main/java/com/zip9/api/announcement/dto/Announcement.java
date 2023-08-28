@@ -2,7 +2,10 @@ package com.zip9.api.announcement.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zip9.api.LH.dto.LHAnnouncementResponse;
-import com.zip9.api.LH.enums.*;
+import com.zip9.api.LH.enums.AnnouncementDetailType;
+import com.zip9.api.LH.enums.AnnouncementType;
+import com.zip9.api.LH.enums.City;
+import com.zip9.api.LH.enums.HouseSupplyType;
 import com.zip9.api.announcement.entity.HouseComplexPositionEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -14,7 +17,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -91,20 +93,16 @@ public class Announcement {
         this.supplyType = HouseSupplyType.codeOf(lhAnnouncement.getSupplyTypeCode()).name();
     }
 
-    public Announcement(Long id, String thirdPartyId, String title, String statusCode, String announcementTypeCode, String announcementDetailTypeCode, String cityCode, String detailUrl, String detailUrlMobile, LocalDateTime announcedAt, LocalDateTime closedAt, String supplyTypeCode) {
+    @Builder
+    public Announcement(Long id, String title, String detailTypeName, LocalDate announcedDate, LocalDate closedDate, String applicationTerm, String cityName, List<Position> positions) {
         this.id = id;
-        this.thirdPartyId = thirdPartyId;
         this.title = title;
-        this.statusName = AnnouncementStatus.valueOf(statusCode).name;
-        this.typeName = AnnouncementType.codeOf(announcementTypeCode).name;
-        this.detailTypeName = AnnouncementDetailType.codeOf(announcementDetailTypeCode).name;
-        this.cityName = City.codeOf(cityCode).name;
-        this.cityShortName = City.codeOf(cityCode).shortName;
-        this.detailUrl = detailUrl;
-        this.detailUrlMobile = detailUrlMobile;
-        this.announcedDate = announcedAt.toLocalDate();
-        this.closedDate = closedAt.toLocalDate();
-        this.supplyType = HouseSupplyType.codeOf(supplyTypeCode).name;
+        this.detailTypeName = detailTypeName;
+        this.announcedDate = announcedDate;
+        this.closedDate = closedDate;
+        this.applicationTerm = applicationTerm;
+        this.cityName = cityName;
+        this.positions = positions;
     }
 
     public void setPositions(List<Position> positions) {

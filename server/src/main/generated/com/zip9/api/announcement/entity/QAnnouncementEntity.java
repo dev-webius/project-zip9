@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -37,6 +38,8 @@ public class QAnnouncementEntity extends EntityPathBase<AnnouncementEntity> {
     public final StringPath detailUrl = createString("detailUrl");
 
     public final StringPath detailUrlMobile = createString("detailUrlMobile");
+
+    public final ListPath<HouseComplexEntity, QHouseComplexEntity> houseComplexes = this.<HouseComplexEntity, QHouseComplexEntity>createList("houseComplexes", HouseComplexEntity.class, QHouseComplexEntity.class, PathInits.DIRECT2);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 

@@ -63,13 +63,18 @@ public class HouseComplexEntity extends BaseTimeEntity {
     @Comment("공급 안내사항")
     private String supplyInfoGuide;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ANNOUNCEMENT_ID")
     @Comment("공고 ID")
     private AnnouncementEntity announcement;
 
-    @OneToMany(mappedBy = "houseComplex", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "houseComplex", fetch = FetchType.LAZY)
     private List<HouseTypeEntity> houseTypes = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "HOUSE_COMPLEX_POSITION_ID")
+    @Comment("단지 위치 ID")
+    private HouseComplexPositionEntity houseComplexPositionEntity;
 
     @Builder(builderMethodName = "ByAnnouncementDetailHouseComplexBuilder")
     public HouseComplexEntity(AnnouncementDetailResponse.HouseComplex houseComplex, AnnouncementEntity announcement) {

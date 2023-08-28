@@ -11,7 +11,7 @@ import com.zip9.api.announcement.service.AnnouncementDBService;
 import com.zip9.api.common.util.BizStringUtlls;
 import com.zip9.api.naver.dto.GeocodingResponse;
 import com.zip9.api.naver.service.GeocodingService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -21,7 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@Transactional
+@RequiredArgsConstructor
 public class ScheduleService {
     private final LHService lhService;
     private final AnnouncementDBService announcementDBService;
@@ -34,7 +35,7 @@ public class ScheduleService {
      * ex)  2023-07-18 00:00:00 스케줄러 실행 시
      *      2023-07-17 00:00:00 ~ 2023-07-17 23:59:59 대상
      */
-    @Transactional(readOnly = false)
+    @Transactional
     public boolean migration(AnnouncementsMigrationRequest request) {
         List<LHAnnouncementRequest> requests = request.buildLHRequests();
 
