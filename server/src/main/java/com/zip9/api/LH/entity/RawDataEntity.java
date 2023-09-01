@@ -12,10 +12,7 @@ import com.zip9.api.common.contraints.EnumConstraints;
 import com.zip9.api.common.entity.BaseTimeEntity;
 import com.zip9.api.common.exception.GeneralException;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.util.Assert;
 
 @Table(name = "TB_RAW_DATA", indexes = {

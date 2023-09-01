@@ -34,7 +34,7 @@ public class ReceptionEntity extends BaseTimeEntity {
     @Column(name = "SCHEDULE_GUIDE", length = 1000)
     @Comment("일정내용")
     private String scheduleGuide;
-    @Column(name = "RECEPTION_GUIDE", length = 1000)
+    @Column(name = "RECEPTION_GUIDE", length = 2000)
     @Comment("안내사항")
     private String receptionGuide;
 

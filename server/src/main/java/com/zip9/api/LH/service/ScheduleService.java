@@ -8,10 +8,12 @@ import com.zip9.api.announcement.dto.AnnouncementDetailResponse;
 import com.zip9.api.announcement.dto.AnnouncementsMigrationRequest;
 import com.zip9.api.announcement.entity.*;
 import com.zip9.api.announcement.service.AnnouncementDBService;
+import com.zip9.api.common.exception.GeneralException;
 import com.zip9.api.common.util.BizStringUtlls;
 import com.zip9.api.naver.dto.GeocodingResponse;
 import com.zip9.api.naver.service.GeocodingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -23,6 +25,7 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class ScheduleService {
     private final LHService lhService;
     private final AnnouncementDBService announcementDBService;
@@ -37,6 +40,7 @@ public class ScheduleService {
      */
     @Transactional
     public boolean migration(AnnouncementsMigrationRequest request) {
+        log.info("migration start----{}", request);
         List<LHAnnouncementRequest> requests = request.buildLHRequests();
 
         // STEP 1 - OPEN API RAW DATA 저장
@@ -61,12 +65,15 @@ public class ScheduleService {
     }
 
     private void STEP_3(List<AnnouncementEntity> notClosedAnnouncements) {
+        log.info("migration step3 start");
         for (AnnouncementEntity announcement : notClosedAnnouncements) {
             announcement.close();
         }
+        log.info("migration step3 end");
     }
 
     private void STEP_2(List<RawDataEntity> rawDataEntities) {
+        log.info("migration step2 start");
         for (RawDataEntity rawData : rawDataEntities) {
             LHAnnouncementResponse lhAnnouncement = LHAnnouncementResponse.jsonToObject(rawData.getAnnouncement());
             LHAnnouncementDetailResponse lhAnnouncementDetail = LHAnnouncementDetailResponse.jsonToObject(rawData.getAnnouncementDetail());
@@ -74,81 +81,89 @@ public class ScheduleService {
 
             AnnouncementDetailResponse announcementDetail = buildAnnouncementDetailsFrom(lhAnnouncementDetail, lhAnnouncementSupplyInfo, lhAnnouncement.getSupplyTypeCode());
 
-            // 공고 저장
-            AnnouncementEntity announcementEntity = announcementDBService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
-                    .lhAnnouncement(lhAnnouncement)
-                    .build()
-            );
+            try {
+                // 공고 저장
+                AnnouncementEntity announcementEntity = announcementDBService.save(AnnouncementEntity.ByLHAnnouncementBuilder()
+                        .lhAnnouncement(lhAnnouncement)
+                        .build()
+                );
 
-            // 접수처 저장
-            announcementDBService.save(ReceptionEntity.ByAnnouncementDetailReceptionBuilder()
-                    .reception(announcementDetail.getReception())
-                    .announcement(announcementEntity)
-                    .build()
-            );
-
-            // 기타 저장
-            announcementDBService.save(EtcEntity.ByAnnouncementDetailEtcBuilder()
-                    .etc(announcementDetail.getEtc())
-                    .announcement(announcementEntity)
-                    .build()
-            );
-
-            // 신청자격 저장
-            for (AnnouncementDetailResponse.Qualification qualification : announcementDetail.getQualifications()) {
-                announcementDBService.save(QualificationEntity.ByAnnouncementDetailQualificationBuilder()
-                        .qualification(qualification)
-                        .announcement(announcementEntity)
-                        .build());
-            }
-
-            // 공급일정 저장
-            for (AnnouncementDetailResponse.SupplySchedule supplySchedule : announcementDetail.getSupplySchedules()) {
-                announcementDBService.save(SupplyScheduleEntity.ByAnnouncementDetailSupplyScheduleBuilder()
-                        .supplySchedule(supplySchedule)
+                // 접수처 저장
+                announcementDBService.save(ReceptionEntity.ByAnnouncementDetailReceptionBuilder()
+                        .reception(announcementDetail.getReception())
                         .announcement(announcementEntity)
                         .build()
                 );
-            }
 
-            // 주택단지 저장
-            for (AnnouncementDetailResponse.HouseComplex houseComplex : announcementDetail.getHouseComplexes()) {
+                // 기타 저장
+                announcementDBService.save(EtcEntity.ByAnnouncementDetailEtcBuilder()
+                        .etc(announcementDetail.getEtc())
+                        .announcement(announcementEntity)
+                        .build()
+                );
+
+                // 신청자격 저장
+                for (AnnouncementDetailResponse.Qualification qualification : announcementDetail.getQualifications()) {
+                    announcementDBService.save(QualificationEntity.ByAnnouncementDetailQualificationBuilder()
+                            .qualification(qualification)
+                            .announcement(announcementEntity)
+                            .build());
+                }
+
+                // 공급일정 저장
+                for (AnnouncementDetailResponse.SupplySchedule supplySchedule : announcementDetail.getSupplySchedules()) {
+                    announcementDBService.save(SupplyScheduleEntity.ByAnnouncementDetailSupplyScheduleBuilder()
+                            .supplySchedule(supplySchedule)
+                            .announcement(announcementEntity)
+                            .build()
+                    );
+                }
+
                 // 주택단지 저장
-                HouseComplexEntity houseComplexEntity = announcementDBService.save(HouseComplexEntity.ByAnnouncementDetailHouseComplexBuilder()
-                        .houseComplex(houseComplex)
-                        .announcement(announcementEntity)
-                        .build()
-                );
+                for (AnnouncementDetailResponse.HouseComplex houseComplex : announcementDetail.getHouseComplexes()) {
+                    // 주택단지 저장
+                    HouseComplexEntity houseComplexEntity = announcementDBService.save(HouseComplexEntity.ByAnnouncementDetailHouseComplexBuilder()
+                            .houseComplex(houseComplex)
+                            .announcement(announcementEntity)
+                            .build()
+                    );
 
-                // 주택단지 위치정보 저장
-                GeocodingResponse.Address address = getHouseComplexAddress(houseComplex);
-                announcementDBService.save(HouseComplexPositionEntity.ByAnnouncementDetailHouseComplexPositionBuilder()
-                        .address(address)
-                        .houseComplex(houseComplexEntity)
-                        .build()
-                );
-
-                // 주택단지별 주택타입 저장
-                for (AnnouncementDetailResponse.HouseType houseType : houseComplex.getHouseTypes()) {
-                    announcementDBService.save(HouseTypeEntity.ByAnnouncementDetailHouseTypeBuilder()
-                            .houseType(houseType)
+                    // 주택단지 위치정보 저장
+                    GeocodingResponse.Address address = getHouseComplexAddress(houseComplex);
+                    announcementDBService.save(HouseComplexPositionEntity.ByAnnouncementDetailHouseComplexPositionBuilder()
+                            .address(address)
                             .houseComplex(houseComplexEntity)
                             .build()
                     );
+
+                    // 주택단지별 주택타입 저장
+                    for (AnnouncementDetailResponse.HouseType houseType : houseComplex.getHouseTypes()) {
+                        announcementDBService.save(HouseTypeEntity.ByAnnouncementDetailHouseTypeBuilder()
+                                .houseType(houseType)
+                                .houseComplex(houseComplexEntity)
+                                .build()
+                        );
+                    }
+
+//                    // 주택단지별 첨부파일 저장
+//                    for (AnnouncementDetailResponse.Attachment attachment : houseComplex.getAttachments()) {
+//                        announcementDBService.save(HouseComplexAttachmentEntity.ByAnnouncementDetailAttachmentBuilder()
+//                                .attachment(attachment)
+//                                .houseComplex(houseComplexEntity)
+//                                .build()
+//                        );
+//                    }
                 }
 
-                // 주택단지별 첨부파일 저장
-                for (AnnouncementDetailResponse.Attachment attachment : houseComplex.getAttachments()) {
-                    announcementDBService.save(HouseComplexAttachmentEntity.ByAnnouncementDetailAttachmentBuilder()
-                            .attachment(attachment)
-                            .houseComplex(houseComplexEntity)
-                            .build()
-                    );
-                }
+                rawData.setStatus(RawDataStatus.STEP_2_COMPLETED.code);
+
+            } catch (Exception e) {
+                log.error("migration step2 error---{}---[{}:{}]", e.getMessage(), rawData.getAnnouncementId(), rawData.getAnnouncement());
+                throw new GeneralException(e);
             }
 
-            rawData.setStatus(RawDataStatus.STEP_2_COMPLETED.code);
         }
+        log.info("migration step2 end");
     }
 
     private AnnouncementDetailResponse buildAnnouncementDetailsFrom(LHAnnouncementDetailResponse lhDetail, LHAnnouncementSupplyInfoResponse lhSupplyInfo, String houseSupplyTypeCode) {
@@ -240,6 +255,7 @@ public class ScheduleService {
     }
 
     private void STEP_1(List<LHAnnouncementResponse> lhAnnouncements) {
+        log.info("migration step1 start----{}", lhAnnouncements);
         List<RawDataEntity> rawDataEntities = lhAnnouncements.stream()
                 .map(lhAnnouncement -> RawDataEntity.ByLHAnnouncementBuilder()
                         .announcementId(lhAnnouncement.getId())
@@ -259,5 +275,6 @@ public class ScheduleService {
                 ).toList();
 
         rawDataRepository.saveAll(rawDataEntities);
+        log.info("migration step1 end");
     }
 }

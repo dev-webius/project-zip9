@@ -12,6 +12,6 @@ public interface HouseComplexRepository extends JpaRepository<HouseComplexEntity
     List<HouseComplexEntity> findAllByAnnouncement(AnnouncementEntity announcement);
     List<HouseComplexEntity> findAllByAnnouncementId(Long announcementId);
 
-    @Query("select hce from HouseComplexEntity hce join fetch HouseComplexPositionEntity where hce.announcement in :announcements")
+    @Query("select hc from HouseComplexEntity hc join fetch hc.houseComplexPositionEntity where hc.announcement in :announcements")
     List<HouseComplexEntity> findAllByAnnouncements(@Param("announcements") List<AnnouncementEntity> announcements);
 }

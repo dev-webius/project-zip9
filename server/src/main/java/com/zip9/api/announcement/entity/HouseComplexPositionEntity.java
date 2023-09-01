@@ -47,5 +47,6 @@ public class HouseComplexPositionEntity extends BaseTimeEntity {
         this.x = address.getX();
         this.y = address.getY();
         this.houseComplex = houseComplex;
+        houseComplex.setHouseComplexPositionEntity(this);
     }
 }

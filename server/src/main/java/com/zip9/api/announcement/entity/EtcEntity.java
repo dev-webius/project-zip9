@@ -25,19 +25,19 @@ public class EtcEntity extends BaseTimeEntity {
     @Column(name = "COMMENT", length = 1000)
     @Comment("기타사항")
     private String comment;
-    @Column(name = "ANNOUNCEMENT_DESCRIPTION", length = 1000)
+    @Column(name = "ANNOUNCEMENT_DESCRIPTION", length = 2000)
     @Comment("공고내용")
     private String announcementDescription;
     @Column(name = "CORRECT_OR_CANCEL_REASON", length = 1000)
     @Comment("정정/취소사유")
     private String correctOrCancelReason;
-    @Column(name = "TARGET_AREA", length = 200)
+    @Column(name = "TARGET_AREA", length = 1000)
     @Comment("모집지역")
     private String targetArea;
     @Column(name = "TARGET_HOUSE", length = 200)
     @Comment("대상주택")
     private String targetHouse;
-    @Column(name = "LEASE_TERMS", length = 100)
+    @Column(name = "LEASE_TERMS", length = 2000)
     @Comment("임대기간")
     private String leaseTerms;
     @Column(name = "LEASE_CONDITION", length = 500)
