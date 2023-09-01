@@ -71,5 +71,6 @@ public class HouseTypeEntity extends BaseTimeEntity {
         this.rentFee = houseType.getRentFee();
         this.rentFeeEtc = houseType.getRentFeeEtc();
         this.houseComplex = houseComplex;
+        houseComplex.addHouseTypeEntity(this);
     }
 }

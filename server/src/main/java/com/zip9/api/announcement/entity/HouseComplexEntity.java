@@ -92,4 +92,12 @@ public class HouseComplexEntity extends BaseTimeEntity {
         this.supplyInfoGuide = houseComplex.getSupplyInfoGuide();
         this.announcement = announcement;
     }
+
+    public void addHouseTypeEntity(HouseTypeEntity houseTypeEntity) {
+        this.getHouseTypes().add(houseTypeEntity);
+    }
+
+    public void setHouseComplexPositionEntity(HouseComplexPositionEntity houseComplexPosition) {
+        this.houseComplexPositionEntity = houseComplexPosition;
+    }
 }

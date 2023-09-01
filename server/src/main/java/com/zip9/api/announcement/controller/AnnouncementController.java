@@ -50,14 +50,22 @@ public class AnnouncementController {
         return SuccessResponse.of(service.getAnnouncementDetail(request));
     }
 
-    @Operation(summary = "공고 데이터 크롤링 스케쥴러 실행", description = "공고 데이터 크롤링 스케쥴러 실행")
+    @Operation(hidden = true, summary = "공고 데이터 크롤링 스케쥴러 실행", description = "공고 데이터 크롤링 스케쥴러 실행")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AnnouncementDetailResponse.class))),
+            @ApiResponse(responseCode = "200"),
     })
     @GetMapping("/scheduler")
     public SuccessResponse<Boolean, ?> runScheduler(@ParameterObject @Valid AnnouncementsMigrationRequest request) {
         return SuccessResponse.of(scheduleService.migration(request));
+    }
 
+    @Operation(hidden = true, summary = "공고 데이터 크롤링 스케쥴러 최초 실행", description = "공고 데이터 크롤링 스케쥴러 최초 실행")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200"),
+    })
+    @GetMapping("/scheduler/init")
+    public SuccessResponse<Boolean, ?> schedulerInitialize() {
+        return SuccessResponse.of(scheduleService.migration(AnnouncementsMigrationRequest.createInitRequest()));
     }
 }
 

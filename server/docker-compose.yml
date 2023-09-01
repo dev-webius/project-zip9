@@ -2,6 +2,7 @@ version: "3.2"
 services:
   application:
     container_name: zip9-api
+    platform: linux/amd64
     build: .
     ports:
       - "8080:8080"

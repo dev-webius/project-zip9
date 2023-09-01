@@ -5,7 +5,7 @@ COPY build.gradle .
 COPY settings.gradle .
 COPY src src
 RUN chmod +x ./gradlew
-RUN ./gradlew bootJar
+RUN ./gradlew clean bootJar
 
 FROM openjdk:17-ea-11-jdk-slim
 COPY --from=builder build/libs/*.jar Zip9ApiApplication.jar

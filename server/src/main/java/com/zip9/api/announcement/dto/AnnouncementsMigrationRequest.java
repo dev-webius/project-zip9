@@ -4,7 +4,6 @@ import com.zip9.api.LH.dto.LHAnnouncementRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +23,13 @@ public class AnnouncementsMigrationRequest {
 
     public AnnouncementsMigrationRequest(LocalDate from, LocalDate to) {
         this.from = from;
-        this.to = ObjectUtils.isEmpty(to) ? from : to;
+        this.to = to;
+    }
+
+    public static AnnouncementsMigrationRequest createInitRequest() {
+        LocalDate now = LocalDate.now();
+        LocalDate twoYearsAgo = now.minusYears(1);
+        return new AnnouncementsMigrationRequest(twoYearsAgo, now);
     }
 
     public LocalDateTime getFromDatetime() {
